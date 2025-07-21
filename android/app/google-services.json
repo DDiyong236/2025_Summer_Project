@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "52358897624",
+    "project_id": "summer-project-d8c75",
+    "storage_bucket": "summer-project-d8c75.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:52358897624:android:13acfed9cc5e5528ca5cad",
+        "android_client_info": {
+          "package_name": "com.example.walky"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLeBkx90XcriLb2L8RyIiu7ZZatO-T-wU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
