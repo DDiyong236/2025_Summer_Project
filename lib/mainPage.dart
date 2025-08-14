@@ -13,6 +13,6 @@ class MainPage extends StatelessWidget {
         child: Text("이곳은 기존 사용자 메인 페이지입니다.",
         style: TextStyle(fontSize: 20),)
       ),
-    )
+    );
   }
 }
