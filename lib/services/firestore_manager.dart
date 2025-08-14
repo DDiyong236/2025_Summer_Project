@@ -2,7 +2,7 @@ import 'dart:core';
 import 'dart:ffi';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_db.dart'; // ✅ walkydb 전용 db
+import 'firebase_db.dart'; //
 
 class UserProfile {
   final String uid;        // 파이어스토어에 저장되는 유저ID

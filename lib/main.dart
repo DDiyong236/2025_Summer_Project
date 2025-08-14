@@ -5,7 +5,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences_android/shared_preferences_android.dart';
 import 'services/firebase_options.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'services/tts_manager.dart';
 import 'services/google_auth_service.dart';
@@ -17,23 +19,21 @@ import 'Onboarding_1.dart';
 import 'mainPage.dart';
 
 void main() async {
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  final bool isExistingUser; // 필드 선언
+  isExistingUser = await checkIsFirstRun();
 
-  // is ExistingUser : 어떤 유저인지를 판단하는 bool 변수
-  // -> true =
-  // checkUserStatus() 함수는 UserDecider.dart 파일에서 정의해야 하는 함수
-  // -> 현재 사용자가 이미 앱을 사용하고 있던 유저인지, 앱을 처음 설치한 다운로더인지 반단하는 함수
-  bool isExistingUser = await checkUserStatus();
-
+  FlutterNativeSplash.remove();
   runApp(MyApp(isExistingUser: isExistingUser));
 }
 
 class MyApp extends StatelessWidget {
-  final bool isExistingUser; // 필드 선언
-
+  final bool isExistingUser;
   const MyApp({
     super.key,
     required this.isExistingUser

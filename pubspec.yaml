@@ -17,6 +17,7 @@ dependencies:
   flutter_tts: ^4.2.3
   firebase_auth: ^6.0.0
   google_sign_in: ^7.1.1
+  shared_preferences: ^2.5.3
 
 
 
@@ -47,6 +48,9 @@ flutter_native_splash:
   android: true
   ios: true
   web: false
+  android_12:
+    color: "#FFFFFF"
+    image: assets/img/splash_img.png
 
   # 정렬(선택)
   android_gravity: center              # center, top, bottom, left, right, fill, bottom|center_horizontal 등
