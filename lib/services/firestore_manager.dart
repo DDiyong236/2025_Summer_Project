@@ -2,15 +2,18 @@ import 'dart:core';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_db.dart'; // ✅ walkydb 전용 db
 
-class Todo {
-  final String id;        // 파이어스토어 문서ID
-  final String title;     // 할일 제목
-  final bool done;        // 완료 여부
-  final DateTime createdAt; // 생성 시각
+class UserProfile {
+  final String uid;        // 파이어스토어에 저장되는 유저ID
+  final String nickname;     // 유저 닉네임
+  final Map<String, dynamic> character;        // 캐릭터 정보
+  final String profileImageUrl; // 프로필사진 디렉토리
+  final String statusMessage; // 상태메시지
+  final DateTime updatedAt; //
+  final DateTime createdAt; // 계정 생성 시각
 
-  Todo({
-    required this.id,
-    required this.title,
+  UserProfile({
+    required this.uid,
+    required this.nickname,
     required this.done,
     required this.createdAt,
   });
