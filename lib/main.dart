@@ -1,54 +1,166 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'services/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import 'services/firebase_options.dart';
 import 'services/tts_manager.dart';
 import 'services/google_auth_service.dart';
-import 'services/firestore_manager.dart';
-import 'services/firebase_db.dart'; // ✅ walkydb 전용 db
+
+import 'services/firebase_db.dart';           // ✅ walkydb (FirebaseFirestore 인스턴스)
+import 'services/firestore_manager.dart';     // ✅ UserProfileService, DiaryService, 모델들
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  // 오프라인 캐시 등 옵션
+  db.settings = const Settings(persistenceEnabled: true);
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    // ✅ walkydb 인스턴스에 옵션 적용 (오프라인 캐시 등)
-    db.settings = const Settings(persistenceEnabled: true);
-
-    return MaterialApp(
-      title: 'Firebase: Storage + Firestore (walkydb)',
-      home: ImageUploadPage(),
+    return const MaterialApp(
+      title: 'Firebase: Auth → Storage + Firestore (walkydb)',
+      home: AuthGate(),
     );
   }
 }
 
-class ImageUploadPage extends StatefulWidget {
+/// 로그인 상태에 따라 화면 분기
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
   @override
-  State<ImageUploadPage> createState() => _ImageUploadPageState();
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (_, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final user = snap.data;
+        if (user == null) {
+          // 로그인 필요
+          return const LoginPage();
+        }
+        // 로그인 됨 → 기능 테스트 화면
+        return const HomePage();
+      },
+    );
+  }
 }
 
-class _ImageUploadPageState extends State<ImageUploadPage> {
-  // --- 기존 업로드/로그인/TTS ---
-  File? _image;
-  String? _downloadUrl;
+/// 로그인 전용 화면
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   late final TTSManager _tts;
   late final AuthService _auth;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tts = TTSManager();
+    _auth = AuthService();
+  }
+
+  @override
+  void dispose() {
+    _tts.dispose();
+    super.dispose();
+  }
+
+  Future<void> _googleSignIn() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await _auth.signInWithGoogle();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인 성공')),
+      );
+      // authStateChanges()가 HomePage로 자동 전환
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인 실패: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('로그인 필요')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('테스트 전에 먼저 로그인하세요.'),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: _busy ? null : _googleSignIn,
+                child: Text(_busy ? '로그인 중…' : 'Google 로그인'),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => _tts.speak('로그인 테스트 화면입니다.'),
+                child: const Text('TTS 테스트'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 로그인 후 기능 테스트 화면
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // ---- 공통 (TTS/인증) ----
+  late final TTSManager _tts;
+  late final AuthService _auth;
+
+  // ---- 이미지 업로드 ----
+  File? _image;
+  String? _downloadUrl;
   final TextEditingController _captionController = TextEditingController();
 
-  // --- Todo 전용 ---
-  final _todoSvc = TodoService();
-  final TextEditingController _todoTextController = TextEditingController();
+  // ---- 프로필 ----
+  final _nicknameCtrl = TextEditingController();
+  final _statusCtrl = TextEditingController();
+  final _profileSvc = UserProfileService();
+
+  // ---- 일기 ----
+  final _diaryTitleCtrl = TextEditingController();
+  final _diaryBodyCtrl = TextEditingController();
+  final _diarySvc = DiaryService();
 
   @override
   void initState() {
@@ -61,11 +173,14 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
   void dispose() {
     _tts.dispose();
     _captionController.dispose();
-    _todoTextController.dispose();
+    _nicknameCtrl.dispose();
+    _statusCtrl.dispose();
+    _diaryTitleCtrl.dispose();
+    _diaryBodyCtrl.dispose();
     super.dispose();
   }
 
-  // ---------- 이미지 업로드 ----------
+  // ===================== 이미지 업로드 =====================
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
@@ -80,11 +195,13 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
     final ref = FirebaseStorage.instance.ref().child('images/$fileName.jpg');
 
     await ref.putFile(_image!);
-
     final url = await ref.getDownloadURL();
     setState(() => _downloadUrl = url);
 
-    await _saveUploadMetaToFirestore(downloadUrl: url, caption: _captionController.text.trim());
+    await _saveUploadMetaToFirestore(
+      downloadUrl: url,
+      caption: _captionController.text.trim(),
+    );
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -92,24 +209,15 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
     );
   }
 
-  // ✅ 업로드 메타데이터 저장: walkydb 의 users/{uid}/uploads
+  // ✅ 업로드 메타데이터 저장: users/{uid}/uploads
   Future<void> _saveUploadMetaToFirestore({
     required String downloadUrl,
     String? caption,
   }) async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인 후 Firestore에 업로드 기록 저장')),
-        );
-      }
-      return;
-    }
+    final user = _auth.currentUser; // 로그인 보장 (AuthGate)
+    final uid = user!.uid;
 
-    final uid = user.uid;
     final col = db.collection('users').doc(uid).collection('uploads');
-
     await col.add({
       'url': downloadUrl,
       'caption': caption ?? '',
@@ -119,17 +227,8 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
     _captionController.clear();
   }
 
-  // ✅ walkydb에서 내 업로드 목록 구독
   Widget _buildUploadsList() {
-    final user = _auth.currentUser;
-    if (user == null) {
-      return const Padding(
-        padding: EdgeInsets.all(12),
-        child: Text('로그인 후 내 업로드 기록을 볼 수 있어요.'),
-      );
-    }
-
-    final uid = user.uid;
+    final uid = _auth.currentUser!.uid;
     final stream = db
         .collection('users')
         .doc(uid)
@@ -206,69 +305,143 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
     );
   }
 
-  // ---------- Todo ----------
-  Future<void> _addTodo() async {
-    final text = _todoTextController.text.trim();
-    if (text.isEmpty) return;
-    await _todoSvc.add(text);
-    _todoTextController.clear();
+  // ===================== 프로필 =====================
+  Future<void> _createOrUpdateProfile({required bool isCreate}) async {
+    try {
+      await _profileSvc.createORUpdateProfile(
+        nickname: _nicknameCtrl.text.trim(),
+        character: const {},
+        profileImageUrl: '',
+        statusMessage: _statusCtrl.text.trim(),
+        isCreate: isCreate,
+      );
+      _snack(isCreate ? '프로필 생성 완료' : '프로필 업데이트 완료');
+    } catch (e) {
+      _snack('프로필 저장 실패: $e');
+    }
   }
 
-  Widget _buildTodoSection() {
+  Widget _buildProfileSection() {
+    final uid = _auth.currentUser!.uid;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('Todos (walkydb)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('프로필 (users/{uid})', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        Row(
+        TextField(
+          controller: _nicknameCtrl,
+          decoration: const InputDecoration(
+            labelText: '닉네임',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _statusCtrl,
+          decoration: const InputDecoration(
+            labelText: '상태 메시지',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
           children: [
-            Expanded(
-              child: TextField(
-                controller: _todoTextController,
-                decoration: const InputDecoration(
-                  hintText: '할 일을 입력하세요',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (_) => _addTodo(),
-              ),
+            ElevatedButton(
+              onPressed: () => _createOrUpdateProfile(isCreate: true),
+              child: const Text('프로필 생성'),
             ),
-            const SizedBox(width: 8),
-            ElevatedButton(onPressed: _addTodo, child: const Text('추가')),
+            ElevatedButton(
+              onPressed: () => _createOrUpdateProfile(isCreate: false),
+              child: const Text('프로필 업데이트'),
+            ),
           ],
         ),
         const SizedBox(height: 8),
-        StreamBuilder<List<Todo>>(
-          stream: _todoSvc.watchAll(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        StreamBuilder<UserProfile?>(
+          stream: _profileSvc.watchProfile(uid),
+          builder: (_, snap) {
+            final p = snap.data;
+            if (snap.connectionState == ConnectionState.waiting) {
               return const Padding(
-                padding: EdgeInsets.all(12),
-                child: CircularProgressIndicator(),
+                padding: EdgeInsets.all(8),
+                child: LinearProgressIndicator(),
               );
             }
-            final items = snapshot.data ?? [];
-            if (items.isEmpty) {
+            if (p == null) return const Text('프로필 문서가 없습니다.');
+            return Text(
+              '현재 프로필 → nickname: ${p.nickname}, status: ${p.statusMessage}\ncreatedAt: ${p.createdAt}, updatedAt: ${p.updatedAt}',
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ===================== 일기 =====================
+  Future<void> _addDiary() async {
+    try {
+      final id = await _diarySvc.addDiary(
+        diaryTitle: _diaryTitleCtrl.text.trim(),
+        body: _diaryBodyCtrl.text.trim(),
+        photoTitle: '',
+      );
+      _diaryTitleCtrl.clear();
+      _diaryBodyCtrl.clear();
+      _snack('일기 저장 완료: $id');
+    } catch (e) {
+      _snack('일기 저장 실패: $e');
+    }
+  }
+
+  Widget _buildDiarySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text('일기 (users/{uid}/diary/{YYYY-MM-DD-N})', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _diaryTitleCtrl,
+          decoration: const InputDecoration(
+            labelText: '일기 제목',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _diaryBodyCtrl,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: '일기 내용',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(onPressed: _addDiary, child: const Text('일기 추가')),
+        const SizedBox(height: 8),
+        StreamBuilder<List<userDiary>>(
+          stream: _diarySvc.watchDiaries(limit: 50),
+          builder: (_, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
               return const Padding(
                 padding: EdgeInsets.all(12),
-                child: Text('등록된 할 일이 없어요'),
+                child: LinearProgressIndicator(),
               );
+            }
+            final items = snap.data ?? [];
+            if (items.isEmpty) {
+              return const Text('작성된 일기가 없습니다.');
             }
             return ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: items.length,
               itemBuilder: (_, i) {
-                final t = items[i];
-                return Dismissible(
-                  key: ValueKey(t.id),
-                  background: Container(color: Colors.red.withOpacity(0.2)),
-                  onDismissed: (_) => _todoSvc.delete(t.id),
-                  child: CheckboxListTile(
-                    value: t.done,
-                    title: Text(t.title),
-                    subtitle: Text(t.createdAt.toLocal().toString()),
-                    onChanged: (v) => _todoSvc.setDone(t.id, v ?? false),
-                  ),
+                final e = items[i];
+                return ListTile(
+                  title: Text('${e.diaryTitle}  (#${e.entryNumber})'),
+                  subtitle: Text(e.body, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  trailing: Text(e.createdAt?.toLocal().toString() ?? ''),
                 );
               },
             );
@@ -278,12 +451,28 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
     );
   }
 
+  // ===================== UI =====================
   @override
   Widget build(BuildContext context) {
-    final loggedIn = _auth.currentUser != null;
-
+    final user = _auth.currentUser!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Firebase: Storage + Firestore (walkydb)')),
+      appBar: AppBar(
+        title: const Text('Firebase: Auth → Storage + Firestore (walkydb)'),
+        actions: [
+          IconButton(
+            tooltip: '로그아웃',
+            onPressed: () async {
+              await _auth.signOut();
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('로그아웃 완료')),
+              );
+              // authStateChanges()가 LoginPage로 자동 전환
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -291,7 +480,7 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // --- 이미지 업로드 영역 ---
+                // --- 이미지 업로드 ---
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -301,8 +490,7 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                if (_image != null)
-                  Center(child: Image.file(_image!, height: 180)),
+                if (_image != null) Center(child: Image.file(_image!, height: 180)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _captionController,
@@ -317,57 +505,16 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
                   SelectableText(_downloadUrl!),
                 ],
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => _tts.speak("이동근 바보 "),
-                      child: const Text('음성 안내'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        try {
-                          final cred = await _auth.signInWithGoogle();
-                          final user = cred.user;
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('로그인 성공: ${user?.displayName ?? user?.email}')),
-                          );
-                          setState(() {});
-                        } catch (e) {
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('로그인 실패: $e')),
-                          );
-                        }
-                      },
-                      child: const Text('Google 로그인'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await _auth.signOut();
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('로그아웃 완료')),
-                        );
-                        setState(() {});
-                      },
-                      child: const Text('로그아웃'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
+
+                // --- 로그인/유저 표시 ---
                 Text(
-                  loggedIn
-                      ? '환영합니다, ${_auth.currentUser!.displayName ?? _auth.currentUser!.email}'
-                      : '로그인 안 됨',
+                  '환영합니다, ${user.displayName ?? user.email}',
                   textAlign: TextAlign.center,
                 ),
+
                 const Divider(height: 28),
 
-                // --- Firestore: 내 업로드 목록 ---
+                // --- 업로드 목록 ---
                 const Text('내 업로드 (users/{uid}/uploads @ walkydb)',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
@@ -375,13 +522,23 @@ class _ImageUploadPageState extends State<ImageUploadPage> {
 
                 const Divider(height: 28),
 
-                // --- Firestore: Todo 영역 ---
-                _buildTodoSection(),
+                // --- 프로필 섹션 ---
+                _buildProfileSection(),
+
+                const Divider(height: 28),
+
+                // --- 일기 섹션 ---
+                _buildDiarySection(),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _snack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }
