@@ -47,8 +47,7 @@ flutter_native_splash:
   android: true
   ios: true
   web: false
-
-  # 정렬(선택)
+  # 정렬
   android_gravity: center              # center, top, bottom, left, right, fill, bottom|center_horizontal 등
   ios_content_mode: center             # scaleToFill / scaleAspectFit / center ...
 
