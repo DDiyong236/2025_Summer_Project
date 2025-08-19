@@ -48,7 +48,7 @@ flutter_native_splash:
 
   # color와 background_image 속성은 둘 중 하나만 쓸 수 있음
   color: "#FFFFFF"
-  image: assets/img/splash_img.png     # ← PNG로 내보낸 파일
+  image: assets/img/walky_logo.png     # ← PNG로 내보낸 파일
 
 
   # 정렬(선택)

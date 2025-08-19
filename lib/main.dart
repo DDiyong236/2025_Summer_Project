@@ -20,7 +20,7 @@ import 'mainPage.dart';
 
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding); // 앱이 준비될 때까지 스플래시 화면을 계속 유지하겠다고 선언
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
