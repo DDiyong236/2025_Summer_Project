@@ -21,7 +21,6 @@ dependencies:
 
 
 
-
   cloud_firestore: ^6.0.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -43,14 +42,14 @@ flutter:
     - assets/img/
 
 flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/img/splash_img.png     # ← PNG로 내보낸 파일
   android: true
   ios: true
   web: false
-  android_12:
-    color: "#FFFFFF"
-    image: assets/img/splash_img.png
+
+  # color와 background_image 속성은 둘 중 하나만 쓸 수 있음
+  color: "#FFFFFF"
+  image: assets/img/walky_logo.png     # ← PNG로 내보낸 파일
+
 
   # 정렬(선택)
   android_gravity: center              # center, top, bottom, left, right, fill, bottom|center_horizontal 등
