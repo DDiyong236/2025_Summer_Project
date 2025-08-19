@@ -22,6 +22,7 @@ void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding); // 앱이 준비될 때까지 스플래시 화면을 계속 유지하겠다고 선언
 
+  // firebase 관련 초기화
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Walky',
+      title: 'WALKY',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -57,7 +58,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: isExistingUser ? const MainPage() : const Onboarding_1(),
+      home: isExistingUser ? const MainPage() : const Onboarding1(),
     );
   }
 }

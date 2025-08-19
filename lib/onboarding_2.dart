@@ -1,0 +1,24 @@
+import 'package:flutter/material.dart';
+import 'package:walky/services/onboarding_body.dart';
+import 'onboarding_1.dart' show _OnboardBody; // 같은 레이아웃 재사용
+
+class Onboarding2 extends StatelessWidget {
+  final String imageAsset;
+  final String title;
+  final String desc;
+
+  const Onboarding2({
+    super.key,
+    this.imageAsset = 'assets/illust_2.png',
+    this.title = '페이지 2',
+    this.desc = '페이지 2입니다.',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OnboardBody(
+        imageAsset: imageAsset,
+        title: title,
+        desc: desc);
+  }
+}
