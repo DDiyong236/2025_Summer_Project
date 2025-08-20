@@ -18,6 +18,9 @@ import 'services/user_decider.dart'; // 판단 로직 가져오기
 import 'onboarding_1.dart';
 import 'main_page.dart';
 
+// dart run flutter_native_splash:remove
+// dart run flutter_native_splash:create
+
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding); // 앱이 준비될 때까지 스플래시 화면을 계속 유지하겠다고 선언
