@@ -5,7 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences_android/shared_preferences_android.dart';
+import 'package:walky/services/onboarding_flow.dart';
 import 'services/firebase_options.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -31,20 +31,19 @@ void main() async {
   // : 기본적으로 Flutter에서 첫 프레임을 그리기 시작할 때 Splash Screen은 제거됨
   // 만약 앱이 초기화되는 동안에 Splash Screen을 유지하려면 preserve() 또는 remove() 메서드를 같이 사용하면 됨
 
-  final bool isExistingUser; // 필드 선언
-  isExistingUser = await isFirstRun();
+  final bool isFirstLaunch = await isFirstRun();
 
   FlutterNativeSplash.remove(); // Splash 제거
-  runApp(MyApp(isExistingUser: isExistingUser));
+  runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
 
 
 
 class MyApp extends StatelessWidget {
-  final bool isExistingUser;
+  final bool isFirstLaunch;
   const MyApp({
     super.key,
-    required this.isExistingUser
+    required this.isFirstLaunch
   });
 
   @override
@@ -58,7 +57,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: isExistingUser ? const MainPage() : const Onboarding1(),
+      home: isFirstLaunch ? const OnboardingFlow() : const MainPage(),
     );
   }
 }

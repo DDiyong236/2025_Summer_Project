@@ -9,8 +9,8 @@ class Onboarding3 extends StatelessWidget {
 
   const Onboarding3({
     super.key,
-    this.imageAsset = 'assets/illust_3.png',
-    this.title = '페이지 3',
+    this.imageAsset = 'assets/img/walky_logo.png',
+    this.title = '온보딩 3',
     this.desc = '페이지 3입니다.',
   });
 
