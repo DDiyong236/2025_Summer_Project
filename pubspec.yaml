@@ -41,6 +41,19 @@ flutter:
   assets:
     - assets/img/
 
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Black.ttf
+        - asset: assets/fonts/Pretendard-Bold.ttf
+        - asset: assets/fonts/Pretendard-ExtraBold.ttf
+        - asset: assets/fonts/Pretendard-ExtraLight.ttf
+        - asset: assets/fonts/Pretendard-Light.ttf
+        - asset: assets/fonts/Pretendard-Medium.ttf
+        - asset: assets/fonts/Pretendard-Regular.ttf
+        - asset: assets/fonts/Pretendard-SemiBold.ttf
+        - asset: assets/fonts/Pretendard-Thin.ttf
+
 flutter_native_splash:
   android: true
   ios: true
