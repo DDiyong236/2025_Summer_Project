@@ -18,7 +18,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   int index = 0;
 
   final pages = const [
-    Onboarding1(), // 필요하면 Onboarding1(imageAsset:'...', title:'...', desc:'...')로 교체
+    Onboarding1(),
     Onboarding2(),
     Onboarding3(),
   ];
@@ -27,7 +27,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstRun', false);
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainPage()));
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const MainPage()),
+    );
   }
 
   @override
@@ -39,48 +41,65 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   @override
   Widget build(BuildContext context) {
     final isLast = index == pages.length - 1;
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Onboarding - ${index + 1}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[700])),
-              ),
-              Expanded(
-                child: PageView(
-                  controller: controller,
-                  onPageChanged: (i) => setState(() => index = i),
-                  children: pages,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _DotsIndicator(length: pages.length, current: index),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+
+    return WillPopScope(
+      // 선택: 온보딩 중 뒤로가기(안드로이드) 방지
+      onWillPop: () async => false,
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Onboarding - ${index + 1}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(color: Colors.grey[700]),
                   ),
-                  onPressed: () {
-                    if (isLast) {
-                      _finish();
-                    } else {
-                      controller.nextPage(
-                        duration: const Duration(milliseconds: 280),
-                        curve: Curves.easeOut,
-                      );
-                    }
-                  },
-                  child: Text(isLast ? '시작' : '다음으로', style: const TextStyle(fontSize: 18)),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: PageView(
+                    controller: controller,
+                    // ✅ 스와이프 비활성화
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (i) => setState(() => index = i),
+                    children: pages,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _DotsIndicator(length: pages.length, current: index),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () {
+                      if (isLast) {
+                        _finish();
+                      } else {
+                        controller.nextPage(
+                          duration: const Duration(milliseconds: 280),
+                          curve: Curves.easeOut,
+                        );
+                      }
+                    },
+                    child: Text(
+                      isLast ? '시작' : '다음으로',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
