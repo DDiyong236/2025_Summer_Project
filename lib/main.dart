@@ -52,6 +52,7 @@ class MyApp extends StatelessWidget {
       title: 'WALKY',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Pretendard',
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 214, 212, 182),
         ),

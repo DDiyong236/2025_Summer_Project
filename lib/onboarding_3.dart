@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:walky/services/onboarding_body.dart';
-import 'onboarding_1.dart' show _OnboardBody; // 같은 레이아웃 재사용
 
 class Onboarding3 extends StatelessWidget {
   final String imageAsset;
