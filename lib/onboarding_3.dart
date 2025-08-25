@@ -2,22 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:walky/services/onboarding_body.dart';
 
 class Onboarding3 extends StatelessWidget {
-  final String imageAsset;
-  final String title;
-  final String desc;
-
-  const Onboarding3({
-    super.key,
-    this.imageAsset = 'assets/img/walky_logo.png',
-    this.title = '온보딩 3',
-    this.desc = '페이지 3입니다.',
-  });
+  const Onboarding3({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return OnboardBody(
-        imageAsset: imageAsset,
-        title: title,
-        desc: desc);
+    // TODO: implement build
+    return const OnboardBody(
+        imageAsset: 'assets/img/tutorial_3.png',
+        title: '소중한 순간을\n한 눈에 살펴보세요',
+        desc: '그 간의 산책 기록들을 모아보면서\n추억을 되새기세요.',
+    );
   }
 }

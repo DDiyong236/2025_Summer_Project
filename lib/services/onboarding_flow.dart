@@ -43,21 +43,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     final isLast = index == pages.length - 1;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
           child: Column(
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Onboarding - ${index + 1}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(color: Colors.grey[700]),
-                ),
-              ),
               Expanded(
                 child: PageView(
                   controller: controller,
@@ -81,9 +72,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   width: double.infinity,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFBFE240),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(50),
                       ),
                     ),
                     onPressed: _finish,
