@@ -17,6 +17,8 @@ import 'services/user_decider.dart'; // 판단 로직 가져오기
 
 import 'onboarding_1.dart';
 import 'main_page.dart';
+import 'survey_1.dart';
+import 'survey_2.dart';
 
 // dart run flutter_native_splash:remove
 // dart run flutter_native_splash:create
