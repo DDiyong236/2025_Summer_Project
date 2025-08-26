@@ -5,6 +5,7 @@ import '../main_page.dart';
 import '../onboarding_1.dart';
 import '../onboarding_2.dart';
 import '../onboarding_3.dart';
+import 'package:walky/tems_and_cond.dart';
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
@@ -28,7 +29,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     await prefs.setBool('isFirstRun', false);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const MainPage()),
+      MaterialPageRoute(builder: (_) => const TermsAndConditionPage()),
     );
   }
 
