@@ -5,7 +5,7 @@ import '../main_page.dart';
 import '../onboarding_1.dart';
 import '../onboarding_2.dart';
 import '../onboarding_3.dart';
-import 'package:walky/tems_and_cond.dart';
+import 'package:walky/tems_and_cond.dart'; // 약관 페이지로 넘어가기 위해 추가
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
@@ -28,6 +28,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstRun', false);
     if (!mounted) return;
+    // 온보딩 완료 시 약관 동의 페이지로 이동
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const TermsAndConditionPage()),
     );
@@ -43,7 +44,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   Widget build(BuildContext context) {
     final isLast = index == pages.length - 1;
 
-    return Scaffold(
+    // 뒤로가기 차단을 위해 PopScope 위젯 추가
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
@@ -53,7 +57,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               Expanded(
                 child: PageView(
                   controller: controller,
-                  // ✅ 스와이프 가능: physics 제거 (기본 스크롤)
+                  //  스와이프 가능: physics 제거 (기본 스크롤)
                   onPageChanged: (i) => setState(() => index = i),
                   children: pages,
                 ),
@@ -62,7 +66,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               _DotsIndicator(length: pages.length, current: index),
               const SizedBox(height: 16),
 
-              // ✅ 마지막 페이지만 버튼 보이기 (애니메이션 포함)
+              //  마지막 페이지만 버튼 보이기 (애니메이션 포함)
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
                 switchInCurve: Curves.easeOut,
@@ -87,9 +91,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                   // 버튼 영역과 동일한 높이로 레이아웃 유지
                   key: ValueKey('placeholder'),
                   height: 52,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -20,6 +19,7 @@ import 'main_page.dart';
 import 'survey_1.dart';
 import 'survey_2.dart';
 
+
 // dart run flutter_native_splash:remove
 // dart run flutter_native_splash:create
 
@@ -27,18 +27,18 @@ void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding); // 앱이 준비될 때까지 스플래시 화면을 계속 유지하겠다고 선언
 
-  // firebase 관련 초기화
+// firebase 관련 초기화
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 앱 이니셜라이저 설정
-  // : 기본적으로 Flutter에서 첫 프레임을 그리기 시작할 때 Splash Screen은 제거됨
-  // 만약 앱이 초기화되는 동안에 Splash Screen을 유지하려면 preserve() 또는 remove() 메서드를 같이 사용하면 됨
+// 앱 이니셜라이저 설정
+// : 기본적으로 Flutter에서 첫 프레임을 그리기 시작할 때 Splash Screen은 제거됨
+// 만약 앱이 초기화되는 동안에 Splash Screen을 유지하려면 preserve() 또는 remove() 메서드를 같이 사용하면 됨
 
   final bool isFirstLaunch = await isFirstRun();
-
   FlutterNativeSplash.remove(); // Splash 제거
+
   runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
 
