@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'survey_3.dart'; // survey_3.dart 파일을 임포트합니다.
 
 class Survey2 extends StatefulWidget {
   const Survey2({Key? key}) : super(key: key);
@@ -22,29 +23,109 @@ class _Survey2State extends State<Survey2> {
     '뭉게멍',
   ];
 
-  final TextEditingController _nicknameController = TextEditingController();
   int? _selectedIndex;
 
-  @override
-  void dispose() {
-    _nicknameController.dispose();
-    super.dispose();
+  void _saveSelectionAndNavigate(BuildContext context) {
+    if (_selectedIndex != null) {
+      print('선택된 캐릭터 인덱스: $_selectedIndex');
+      // 유효성 검사 후 다음 화면으로 이동
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const Survey3(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ),
+      );
+    } else {
+      // 캐릭터를 선택하지 않았을 경우 경고 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('캐릭터를 선택해주세요.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
-  void _saveSelectionToDatabase(int index) {
-    print('선택된 캐릭터 인덱스: $index');
+  Widget _buildCharacterCard(int index, double screenWidth) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: Column(
+        children: [
+          // 캐릭터 이미지 박스 (고정 크기)
+          Container(
+            width: screenWidth * 0.35, // 화면 너비의 35%로 고정
+            height: screenWidth * 0.35, // 정사각형으로 고정
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: _selectedIndex == index
+                    ? Colors.blue
+                    : Colors.grey[300]!,
+                width: 1.0,
+              ),
+              borderRadius: BorderRadius.circular(20.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Image.asset(
+                _characterImages[index],
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          // 캐릭터 이름 (박스 아래)
+          const SizedBox(height: 10),
+          Text(
+            _characterNames[index],
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
+          // 1. Progress Bar
           Positioned(
-            top: 54.0,
-            left: 41.0,
-            right: 41.0,
+            top: MediaQuery.of(context).size.height * 0.08,
+            left: MediaQuery.of(context).size.height * 0.03,
+            right: MediaQuery.of(context).size.height * 0.03,
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
               child: LinearProgressIndicator(
@@ -57,10 +138,12 @@ class _Survey2State extends State<Survey2> {
               ),
             ),
           ),
+
+          // 2. Header Text (Survey1과 동일한 위치)
           Positioned(
-            top: 120.0,
-            left: 20.0,
-            right: 20.0,
+            top: MediaQuery.of(context).size.height * 0.13,
+            left: MediaQuery.of(context).size.height * 0.025,
+            right: MediaQuery.of(context).size.height * 0.025,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
@@ -85,82 +168,67 @@ class _Survey2State extends State<Survey2> {
               ],
             ),
           ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10.0,
-                mainAxisSpacing: 25.0, // 상자와 텍스트를 포함한 전체 위젯 간의 수직 간격
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: List.generate(4, (index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedIndex = index;
-                      });
-                    },
-                    // ✨ 상자와 텍스트를 별도의 Column으로 묶었습니다.
+
+          // 3. Character Selection Grid (화면 중앙)
+          Positioned(
+            top: screenHeight * 0.28, // 시작 위치 조정
+            left: screenWidth * 0.08,   // 좌우 8% 마진
+            right: screenWidth * 0.08,
+            child: SizedBox(
+              height: screenHeight * 0.52, // 화면 높이의 52% 사용
+              child: Row(
+                children: [
+                  // 첫 번째 열
+                  Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Expanded( // 상자가 남은 공간을 차지하도록 Expanded 추가
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(
-                                color: _selectedIndex == index
-                                    ? Colors.blue
-                                    : Colors.grey[300]!,
-                                width: 3.0,
-                              ),
-                              borderRadius: BorderRadius.circular(20.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Image.asset(_characterImages[index]),
-                            ),
+                        // 첫 번째 캐릭터 (상단 여백 추가)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: _buildCharacterCard(0, screenWidth),
                           ),
                         ),
-                        const SizedBox(height: 10), // 상자와 텍스트 사이 간격
-                        Text(
-                          _characterNames[index], // ✨ 상자 바깥에 텍스트를 배치
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                        const SizedBox(height: 25),
+                        // 세 번째 캐릭터
+                        Expanded(
+                          child: _buildCharacterCard(2, screenWidth),
                         ),
                       ],
                     ),
-                  );
-                }),
+                  ),
+                  const SizedBox(width: 20),
+                  // 두 번째 열
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // 두 번째 캐릭터 (상단 여백 추가)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: _buildCharacterCard(1, screenWidth),
+                          ),
+                        ),
+                        const SizedBox(height: 25),
+                        // 네 번째 캐릭터
+                        Expanded(
+                          child: _buildCharacterCard(3, screenWidth),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+
+          // 4. Next Button (Survey1과 동일한 위치)
           Positioned(
             top: MediaQuery.of(context).size.height * 0.85,
             right: MediaQuery.of(context).size.width * 0.10,
             child: FloatingActionButton(
               onPressed: () {
-                if (_selectedIndex != null) {
-                  _saveSelectionToDatabase(_selectedIndex!);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('캐릭터를 선택해주세요.'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+                _saveSelectionAndNavigate(context);
               },
               child: const Icon(
                 Icons.arrow_forward,
