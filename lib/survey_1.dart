@@ -30,7 +30,6 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
       duration: const Duration(milliseconds: 400), // 진동 시간 조절
     );
 
-    // 자연스러운 진동을 위한 Tween 설정
     _shakeAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
       CurvedAnimation(
         parent: _shakeAnimationController,
@@ -56,12 +55,10 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
   }
 
   void _validateInput() {
-    // 이전 타이머가 있다면 취소
     if (_debounce?.isActive ?? false) {
       _debounce!.cancel();
     }
 
-    // 500ms(0.5초) 지연 후 유효성 검사 실행
     _debounce = Timer(const Duration(milliseconds: 500), () {
       final text = _nicknameController.text;
       final bool isValid = _validateNickname(text);
@@ -71,7 +68,6 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
         _showError = !isValid && text.isNotEmpty;
       });
 
-      // 유효하지 않은 입력이 있고 텍스트가 비어있지 않을 때 진동 애니메이션 시작
       if (!isValid && text.isNotEmpty) {
         _shakeAnimationController.forward(from: 0.0);
       }
@@ -106,7 +102,7 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
                 curve: Curves.easeInOut,
                 builder: (context, value, child) {
                   return LinearProgressIndicator(
-                    value: value,
+                    value: 0.166,
                     minHeight: 10.0,
                     backgroundColor: const Color(0xFFF5F5F5),
                     valueColor: const AlwaysStoppedAnimation<Color>(
@@ -169,7 +165,6 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(height: 8),
-                // 조건에 따라 글씨 색상 변경 및 진동 효과 적용
                 Transform.translate(
                   offset: Offset(_showError ? _shakeAnimation.value : 0.0, 0.0),
                   child: Center(
@@ -191,27 +186,26 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
             top: MediaQuery.of(context).size.height * 0.85,
             right: MediaQuery.of(context).size.width * 0.10,
             child: FloatingActionButton(
-              onPressed: _isNicknameValid ? () {
+              onPressed: _isNicknameValid
+                  ? () {
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => const Survey2(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                      const begin = Offset(1.0, 0.0);
-                      const end = Offset.zero;
-                      const curve = Curves.ease;
-                      var tween = Tween(begin: begin, end: end).chain(
-                        CurveTween(curve: curve),
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                    const Survey2(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      var tween = Tween(begin: 0.0, end: 1.0).chain(
+                        CurveTween(curve: Curves.ease),
                       );
-                      return SlideTransition(
-                        position: animation.drive(tween),
+                      return FadeTransition(
+                        opacity: animation.drive(tween),
                         child: child,
                       );
                     },
                   ),
                 );
-              } : null,
+              }
+                  : null,
               backgroundColor:
               _isNicknameValid ? const Color(0xFFBFE240) : Colors.grey,
               shape: const CircleBorder(),
