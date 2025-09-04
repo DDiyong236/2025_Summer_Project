@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
-import 'survey_4.dart';
+import 'survey_5.dart';
 
-class Survey3 extends StatefulWidget {
-  const Survey3({Key? key}) : super(key: key);
+class Survey4 extends StatefulWidget {
+  const Survey4({Key? key}) : super(key: key);
 
   @override
-  _Survey3State createState() => _Survey3State();
+  _Survey4State createState() => _Survey4State();
 }
 
-class _Survey3State extends State<Survey3> {
-  final List<String> items = [
-    '녹지 or 공원',
-    '조용하고 감성있는 골목',
-    '강변, 호수, 하천 주변',
-    '카페 많은 거리'
-  ];
+class _Survey4State extends State<Survey4> {
+  final List<String> items = ['기분 전환 및 스트레스 해소', '운동 및 건강 관리', '사진 및 기록', '사색 및 아이디어 얻기'];
   int? selectedIndex;
 
   void _saveSelectionAndNavigate(BuildContext context) {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const Survey4(),
+        pageBuilder: (context, animation, secondaryAnimation) => const Survey5(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
               .chain(CurveTween(curve: Curves.ease));
@@ -48,7 +43,7 @@ class _Survey3State extends State<Survey3> {
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(15)),
                 child: TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0.334, end: 0.5),
+                  tween: Tween<double>(begin: 0.5, end: 0.667),
                   duration: const Duration(milliseconds: 500),
                   curve: Curves.easeInOut,
                   builder: (context, value, child) {
@@ -83,7 +78,7 @@ class _Survey3State extends State<Survey3> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  '어떤 산책 환경에 관심이 있으신가요?',
+                  '산책을 하는 목적을 알려주세요',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -112,9 +107,7 @@ class _Survey3State extends State<Survey3> {
                               padding: const EdgeInsets.symmetric(horizontal: 20.0),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40.0),
-                                color: isSelected
-                                    ? const Color(0x28BFE240)
-                                    : const Color(0xFFFFFFFF),
+                                color: isSelected ? const Color(0x28BFE240) : const Color(0xFFFFFFFF),
                                 border: Border.all(
                                   color: Colors.grey,
                                   width: 0.5,
@@ -130,11 +123,11 @@ class _Survey3State extends State<Survey3> {
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
+                                mainAxisSize: MainAxisSize.min, // 상자 크기를 자식 위젯에 맞춤
                                 children: [
                                   Text(
                                     items[index],
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 18,
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
@@ -142,7 +135,7 @@ class _Survey3State extends State<Survey3> {
                                   ),
                                   const SizedBox(width: 15),
                                   Image.asset(
-                                    'assets/img/walk_icon_${index + 1}.png',
+                                    'assets/img/walk_purpose_${index + 1}.png',
                                     width: 40,
                                     height: 40,
                                   ),
@@ -167,14 +160,12 @@ class _Survey3State extends State<Survey3> {
               onPressed: selectedIndex != null ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
-              backgroundColor: selectedIndex != null
-                  ? const Color(0xFFBFE240)
-                  : Colors.grey,
-              shape: const CircleBorder(),
               child: const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
+              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Colors.grey,
+              shape: const CircleBorder(),
             ),
           ),
         ],

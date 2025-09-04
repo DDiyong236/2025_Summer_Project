@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: isFirstLaunch ? const OnboardingFlow() : const MainPage(),
+      home: const Survey1(),
     );
   }
 }

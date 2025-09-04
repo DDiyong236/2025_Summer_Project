@@ -34,14 +34,10 @@ class _Survey2State extends State<Survey2> {
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => const Survey3(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
+            var tween = Tween(begin: 0.0, end: 1.0)
+                .chain(CurveTween(curve: Curves.ease));
+            return FadeTransition(
+              opacity: animation.drive(tween),
               child: child,
             );
           },
@@ -121,20 +117,27 @@ class _Survey2State extends State<Survey2> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. Progress Bar
+          // 1. 진행바 (수정된 부분)
           Positioned(
             top: MediaQuery.of(context).size.height * 0.08,
             left: MediaQuery.of(context).size.height * 0.03,
             right: MediaQuery.of(context).size.height * 0.03,
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
-              child: LinearProgressIndicator(
-                value: 0.334,
-                minHeight: 10.0,
-                backgroundColor: const Color(0xFFF5F5F5),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFFBFE240),
-                ),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.167, end: 0.334),
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                builder: (context, value, child) {
+                  return LinearProgressIndicator(
+                    value: value,
+                    minHeight: 10.0,
+                    backgroundColor: const Color(0xFFF5F5F5),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFFBFE240),
+                    ),
+                  );
+                },
               ),
             ),
           ),
