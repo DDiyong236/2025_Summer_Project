@@ -1,7 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_login/interface/types/naver_login_result.dart';
+import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
+import 'package:walky/services/google_auth_service.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'main_page.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
+
+  Future<void> _signInWithGoogle(BuildContext context) async {
+    final AuthService _authService = AuthService();
+    await _authService.signInWithGoogle()
+        .then((_) {
+      // 로그인 성공
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainPage()), // 예시
+      );
+    })
+        .catchError((error) {
+      // 로그인 실패
+      print('로그인 실패: $error');
+    });
+  }
+  Future<void> _signInWithKakao(BuildContext context) async {
+    if (await isKakaoTalkInstalled()) {
+      try {
+        // 카카오톡 로그인 시도
+        await UserApi.instance.loginWithKakaoTalk().
+            then((_){
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => const MainPage()),
+              );
+        }).catchError((error){
+          print("로그인 실패 $error");
+        });
+      } catch (error) {
+        print('카카오톡 로그인 실패: $error');
+        // 실패 시, 웹 로그인 시도
+        try {
+          await UserApi.instance.loginWithKakaoAccount()
+          .then((_) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const MainPage()),
+            );
+          }).catchError((Error){
+            print("로그인 실패 $Error");
+          });
+        } catch (e) {
+        }
+      }
+    } else {
+      // 카카오톡 미설치 시 웹으로 로그인
+      try {
+        await UserApi.instance.loginWithKakaoAccount();
+        User user = await UserApi.instance.me();
+        print('카카오 계정 로그인 성공: ${user.kakaoAccount?.profile?.nickname}');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainPage()),
+        );
+      } catch (e) {
+        print("카카오 계정 로그인 실패 $e");
+      }
+    }
+  }
+
+  Future<void> _signInWithNaver(BuildContext context) async{
+    try{
+      final NaverLoginResult res = await FlutterNaverLogin.logIn();
+      if(res.status == NaverLoginStatus.loggedIn){
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainPage()),
+        );
+      }else{
+        print("로그인 실패: ${res.errorMessage}");
+      }
+    }catch(e){
+      print("로그인중 오류 발생: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +124,13 @@ class LoginScreen extends StatelessWidget {
                 const Spacer(),
                 _buildSocialLoginButton(
                   context,
-                  imagePath: 'assets/img/kakao_logo.png',
+                  imagePath: 'assets/img/kakao_icons.png',
                   text: '카카오 계정으로 시작하기',
-                  backgroundColor: const Color(0xFFFFE500),
-                  textColor: Colors.black,
-                  onPressed: () {},
+                  backgroundColor: const Color(0xFFFEE500),
+                  textColor: Color(0xDA000000),
+                  onPressed: () {
+                    _signInWithKakao(context);
+                  },
                 ),
                 const SizedBox(height: 16),
                 _buildSocialLoginButton(
@@ -60,7 +139,9 @@ class LoginScreen extends StatelessWidget {
                   text: '네이버 계정으로 시작하기',
                   backgroundColor: const Color(0xFF03C75A),
                   textColor: Colors.white,
-                  onPressed: () {},
+                  onPressed: () {
+                    _signInWithNaver(context);
+                  },
                 ),
                 const SizedBox(height: 16),
                 _buildSocialLoginButton(
@@ -70,7 +151,9 @@ class LoginScreen extends StatelessWidget {
                   backgroundColor: Colors.white,
                   textColor: Colors.black54,
                   borderColor: Colors.grey.shade300,
-                  onPressed: () {},
+                  onPressed: () {
+                    _signInWithGoogle(context);
+                  },
                 ),
                 const SizedBox(height: 50),
               ],

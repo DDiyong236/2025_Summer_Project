@@ -7,6 +7,15 @@
         android:label="WALKY"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        <meta-data
+            android:name="com.naver.sdk.clientId"
+            android:value="@string/client_id"/>
+        <meta-data
+            android:name="com.naver.sdk.clientSecret"
+            android:value="@string/client_secret"/>
+        <meta-data
+            android:name="com.naver.sdk.clientName"
+            android:value="@string/client_name"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -27,6 +36,16 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
+            android:exported="true">
+            <intent-filter android:label="flutter_web_auth">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="kakao2f2c5202737e8642eed0968928895634" android:host="oauth"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
