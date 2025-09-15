@@ -1,19 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_result.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
+import 'package:walky/services/firestore_manager.dart';
 import 'package:walky/services/google_auth_service.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'main_page.dart';
+import 'services/firebase_db.dart';
+import 'services/firebase_storage_manager.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  final String nickname;
+  final int characterIndex;
+  final int environmentIndex;
+  final int purposeIndex;
+  final int timeIndex;
+  final int featureIndex;
+  const LoginScreen({super.key, required this.nickname, required this.characterIndex, required this.environmentIndex, required this.purposeIndex, required this.timeIndex, required this.featureIndex});
+
+
+  Future<void> _saveSurveyData() async{
+    final UserProfileService _userProfileService = UserProfileService();
+    final surveyResults = {
+      'environmentIndex': environmentIndex,
+      'purposeIndex': purposeIndex,
+      'timeIndex': timeIndex,
+      'featureIndex': featureIndex,
+    };
+    try{
+      await _userProfileService.createORUpdateProfile(
+        nickname: nickname,
+        character: characterIndex,
+        survey: surveyResults,
+        isCreate: true,
+      );
+      print("설문 데이터가 성공적으로 저장되었습니다.");
+    }catch(e){
+      print("데이터 저장중 오류 발생: $e");
+    }
+  }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     final AuthService _authService = AuthService();
     await _authService.signInWithGoogle()
-        .then((_) {
+        .then((_) async{
       // 로그인 성공
+      await _saveSurveyData();
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const MainPage()), // 예시
       );
@@ -28,7 +60,8 @@ class LoginScreen extends StatelessWidget {
       try {
         // 카카오톡 로그인 시도
         await UserApi.instance.loginWithKakaoTalk().
-            then((_){
+            then((_) async{
+              await _saveSurveyData();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (context) => const MainPage()),
               );
@@ -40,7 +73,8 @@ class LoginScreen extends StatelessWidget {
         // 실패 시, 웹 로그인 시도
         try {
           await UserApi.instance.loginWithKakaoAccount()
-          .then((_) {
+          .then((_) async{
+            await _saveSurveyData();
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const MainPage()),
             );
@@ -56,6 +90,7 @@ class LoginScreen extends StatelessWidget {
         await UserApi.instance.loginWithKakaoAccount();
         User user = await UserApi.instance.me();
         print('카카오 계정 로그인 성공: ${user.kakaoAccount?.profile?.nickname}');
+        await _saveSurveyData();
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainPage()),
         );
@@ -69,6 +104,7 @@ class LoginScreen extends StatelessWidget {
     try{
       final NaverLoginResult res = await FlutterNaverLogin.logIn();
       if(res.status == NaverLoginStatus.loggedIn){
+        await _saveSurveyData();
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainPage()),
         );

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'survey_4.dart';
 
 class Survey3 extends StatefulWidget {
-  const Survey3({Key? key}) : super(key: key);
+  final String nickname;
+  final int characterIndex;
+  const Survey3({Key? key, required this.nickname, required this.characterIndex}) : super(key: key);
 
   @override
   _Survey3State createState() => _Survey3State();
@@ -21,7 +23,11 @@ class _Survey3State extends State<Survey3> {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const Survey4(),
+        pageBuilder: (context, animation, secondaryAnimation) => Survey4(
+          nickname: widget.nickname,
+          characterIndex: widget.characterIndex,
+          environmentIndex: selectedIndex!,
+        ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
               .chain(CurveTween(curve: Curves.ease));
@@ -54,7 +60,7 @@ class _Survey3State extends State<Survey3> {
                   builder: (context, value, child) {
                     return LinearProgressIndicator(
                       value: value,
-                      minHeight: 10.0,
+                      minHeight: 7.0,
                       backgroundColor: const Color(0xFFF5F5F5),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFFBFE240),
@@ -90,7 +96,7 @@ class _Survey3State extends State<Survey3> {
                     color: Color(0xFF000000),
                   ),
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 10),
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.5,
                   child: ListView.builder(
@@ -107,26 +113,18 @@ class _Survey3State extends State<Survey3> {
                               });
                             },
                             child: Container(
-                              height: 50,
-                              margin: const EdgeInsets.symmetric(vertical: 5),
+                              height: 40,
+                              margin: const EdgeInsets.symmetric(vertical: 7),
                               padding: const EdgeInsets.symmetric(horizontal: 20.0),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40.0),
                                 color: isSelected
-                                    ? const Color(0x28BFE240)
+                                    ? const Color(0x33BFE240)
                                     : const Color(0xFFFFFFFF),
                                 border: Border.all(
-                                  color: Colors.grey,
-                                  width: 0.5,
+                                  color: isSelected ? const Color(0xFFBFE240) : Color(0xFFDDD7D7),
+                                  width: 1.4,
                                 ),
-                                boxShadow: [
-                                  if (isSelected)
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                ],
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -135,16 +133,15 @@ class _Survey3State extends State<Survey3> {
                                   Text(
                                     items[index],
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 14,
                                       color: Colors.black,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(width: 15),
                                   Image.asset(
                                     'assets/img/walk_icon_${index + 1}.png',
-                                    width: 40,
-                                    height: 40,
+                                    width: 20,
+                                    height: 20,
                                   ),
                                 ],
                               ),
@@ -167,9 +164,10 @@ class _Survey3State extends State<Survey3> {
               onPressed: selectedIndex != null ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
+              elevation: 0,
               backgroundColor: selectedIndex != null
                   ? const Color(0xFFBFE240)
-                  : Colors.grey,
+                  : Color(0x80BFE240),
               shape: const CircleBorder(),
               child: const Icon(
                 Icons.arrow_forward,

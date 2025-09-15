@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'survey_5.dart';
 
 class Survey4 extends StatefulWidget {
-  const Survey4({Key? key}) : super(key: key);
+  final String nickname;
+  final int characterIndex;
+  final int environmentIndex;
+  const Survey4({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndex}) : super(key: key);
 
   @override
   _Survey4State createState() => _Survey4State();
@@ -16,7 +19,12 @@ class _Survey4State extends State<Survey4> {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const Survey5(),
+        pageBuilder: (context, animation, secondaryAnimation) => Survey5(
+          nickname: widget.nickname,
+          characterIndex: widget.characterIndex,
+          environmentIndex: widget.environmentIndex,
+          purposeIndex: selectedIndex!,
+        ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
               .chain(CurveTween(curve: Curves.ease));
@@ -49,7 +57,7 @@ class _Survey4State extends State<Survey4> {
                   builder: (context, value, child) {
                     return LinearProgressIndicator(
                       value: value,
-                      minHeight: 10.0,
+                      minHeight: 7.0,
                       backgroundColor: const Color(0xFFF5F5F5),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFFBFE240),
@@ -102,24 +110,16 @@ class _Survey4State extends State<Survey4> {
                               });
                             },
                             child: Container(
-                              height: 50,
-                              margin: const EdgeInsets.symmetric(vertical: 5),
+                              height: 40,
+                              margin: const EdgeInsets.symmetric(vertical: 7),
                               padding: const EdgeInsets.symmetric(horizontal: 20.0),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40.0),
-                                color: isSelected ? const Color(0x28BFE240) : const Color(0xFFFFFFFF),
+                                color: isSelected ? const Color(0x33BFE240) : const Color(0xFFFFFFFF),
                                 border: Border.all(
-                                  color: Colors.grey,
-                                  width: 0.5,
+                                  color: isSelected ? Color(0xFFBFE240) : Color(0xFFDDD7D7),
+                                  width: 1.4,
                                 ),
-                                boxShadow: [
-                                  if (isSelected)
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                ],
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -128,16 +128,15 @@ class _Survey4State extends State<Survey4> {
                                   Text(
                                     items[index],
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 14,
                                       color: Colors.black,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(width: 15),
                                   Image.asset(
                                     'assets/img/walk_purpose_${index + 1}.png',
-                                    width: 40,
-                                    height: 40,
+                                    width: 20,
+                                    height: 20,
                                   ),
                                 ],
                               ),
@@ -160,11 +159,12 @@ class _Survey4State extends State<Survey4> {
               onPressed: selectedIndex != null ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
+              elevation: 0,
               child: const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Colors.grey,
+              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),

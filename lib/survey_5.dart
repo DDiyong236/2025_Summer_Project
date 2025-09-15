@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'survey_6.dart';
 
 class Survey5 extends StatefulWidget {
-  const Survey5({Key? key}) : super(key: key);
+  final String nickname;
+  final int characterIndex;
+  final int environmentIndex;
+  final int purposeIndex;
+  const Survey5({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndex, required this.purposeIndex}) : super(key: key);
 
   @override
   _Survey5State createState() => _Survey5State();
@@ -16,7 +20,13 @@ class _Survey5State extends State<Survey5> {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const Survey6(),
+        pageBuilder: (context, animation, secondaryAnimation) => Survey6(
+          nickname: widget.nickname,
+          characterIndex: widget.characterIndex,
+          environmentIndex: widget.environmentIndex,
+          purposeIndex: widget.purposeIndex,
+          timeIndex: selectedIndex!,
+        ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
               .chain(CurveTween(curve: Curves.ease));
@@ -49,7 +59,7 @@ class _Survey5State extends State<Survey5> {
                   builder: (context, value, child) {
                     return LinearProgressIndicator(
                       value: value,
-                      minHeight: 10.0,
+                      minHeight: 7.0,
                       backgroundColor: const Color(0xFFF5F5F5),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFFBFE240),
@@ -90,7 +100,7 @@ class _Survey5State extends State<Survey5> {
                   height: MediaQuery.of(context).size.height * 0.5,
                   child: Wrap(
                     spacing: 10.0, // 상자들 사이의 가로 간격
-                    runSpacing: 10.0, // 상자들 사이의 세로 간격
+                    runSpacing: 15.0, // 상자들 사이의 세로 간격
                     children: items.map((item) {
                       int index = items.indexOf(item);
                       final isSelected = selectedIndex == index;
@@ -101,22 +111,14 @@ class _Survey5State extends State<Survey5> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10.0),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(40.0),
-                            color: isSelected ? const Color(0x28BFE240) : const Color(0xFFFFFFFF),
+                            color: isSelected ? const Color(0x33BFE240) : const Color(0xFFFFFFFF),
                             border: Border.all(
-                              color: Colors.grey,
-                              width: 0.5,
+                              color: isSelected ? const Color(0xFFBFE240) : Color(0xFFDDD7D7),
+                              width: 1.4,
                             ),
-                            boxShadow: [
-                              if (isSelected)
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
-                                ),
-                            ],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min, // 상자 크기를 자식 위젯에 맞춤
@@ -124,14 +126,10 @@ class _Survey5State extends State<Survey5> {
                               Text(
                                 item,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 14,
                                   color: Colors.black,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              // 이 부분에는 이미지가 없으므로 제거했습니다.
-                              // const SizedBox(width: 15),
-                              // Image.asset(...)
                             ],
                           ),
                         ),
@@ -151,11 +149,12 @@ class _Survey5State extends State<Survey5> {
               onPressed: selectedIndex != null ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
+              elevation: 0,
               child: const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Colors.grey,
+              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),

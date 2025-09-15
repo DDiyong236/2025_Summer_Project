@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'survey_3.dart'; // survey_3.dart 파일을 임포트합니다.
 
 class Survey2 extends StatefulWidget {
-  const Survey2({Key? key}) : super(key: key);
+  final String nickname;
+  const Survey2({Key? key, required this.nickname}) : super(key: key);
 
   @override
   _Survey2State createState() => _Survey2State();
@@ -23,7 +24,7 @@ class _Survey2State extends State<Survey2> {
     '뭉게멍',
   ];
 
-  int? _selectedIndex;
+  int _selectedIndex = 0;
 
   void _saveSelectionAndNavigate(BuildContext context) {
     if (_selectedIndex != null) {
@@ -32,7 +33,10 @@ class _Survey2State extends State<Survey2> {
       Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const Survey3(),
+          pageBuilder: (context, animation, secondaryAnimation) => Survey3(
+            nickname: widget.nickname,
+            characterIndex: _selectedIndex,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             var tween = Tween(begin: 0.0, end: 1.0)
                 .chain(CurveTween(curve: Curves.ease));
@@ -76,13 +80,6 @@ class _Survey2State extends State<Survey2> {
                 width: 1.0,
               ),
               borderRadius: BorderRadius.circular(20.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -131,7 +128,7 @@ class _Survey2State extends State<Survey2> {
                 builder: (context, value, child) {
                   return LinearProgressIndicator(
                     value: value,
-                    minHeight: 10.0,
+                    minHeight: 7.0,
                     backgroundColor: const Color(0xFFF5F5F5),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       Color(0xFFBFE240),
@@ -233,11 +230,12 @@ class _Survey2State extends State<Survey2> {
               onPressed: () {
                 _saveSelectionAndNavigate(context);
               },
+              elevation: 0,
               child: const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: const Color(0xFFBFE240),
+              backgroundColor: _selectedIndex != null ? const Color(0xFFBFE240) : Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),
