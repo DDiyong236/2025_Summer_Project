@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'loginscreen.dart';
 
 class Survey6 extends StatefulWidget {
-  const Survey6({Key? key}) : super(key: key);
+  final String nickname;
+  final int characterIndex;
+  final int environmentIndex;
+  final int purposeIndex;
+  final int timeIndex;
+  const Survey6({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndex, required this.purposeIndex, required this.timeIndex}) : super(key: key);
 
   @override
   _Survey6State createState() => _Survey6State();
@@ -16,7 +21,14 @@ class _Survey6State extends State<Survey6> {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(
+          nickname: widget.nickname,
+          characterIndex: widget.characterIndex,
+          environmentIndex: widget.environmentIndex,
+          purposeIndex: widget.purposeIndex,
+          timeIndex: widget.timeIndex,
+          featureIndex: selectedIndex!,
+        ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
               .chain(CurveTween(curve: Curves.ease));
@@ -49,7 +61,7 @@ class _Survey6State extends State<Survey6> {
                   builder: (context, value, child) {
                     return LinearProgressIndicator(
                       value: value,
-                      minHeight: 10.0,
+                      minHeight: 7.0,
                       backgroundColor: const Color(0xFFF5F5F5),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFFBFE240),
@@ -122,11 +134,12 @@ class _Survey6State extends State<Survey6> {
               onPressed: selectedIndex != null ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
+              elevation: 0,
               child: const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Colors.grey,
+              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),
@@ -144,32 +157,24 @@ class _Survey6State extends State<Survey6> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(40.0),
           color: isSelected ? const Color(0x28BFE240) : const Color(0xFFFFFFFF),
           border: Border.all(
-            color: Colors.grey,
-            width: 0.5,
+            color: isSelected ? Color(0xFFBFE240) : Color(0xFFDDD7D7),
+            width: 1.4,
           ),
-          boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-          ],
         ),
+
         child: Row(
           mainAxisSize: MainAxisSize.min, // 텍스트 길이에 맞춰 너비 조절
           children: [
             Text(
               item,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 14,
                 color: Colors.black,
-                fontWeight: FontWeight.bold,
               ),
             ),
           ],

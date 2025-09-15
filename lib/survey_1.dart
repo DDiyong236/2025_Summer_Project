@@ -103,7 +103,7 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
                 builder: (context, value, child) {
                   return LinearProgressIndicator(
                     value: 0.166,
-                    minHeight: 10.0,
+                    minHeight: 7.0,
                     backgroundColor: const Color(0xFFF5F5F5),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       Color(0xFFBFE240),
@@ -192,7 +192,7 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                    const Survey2(),
+                    Survey2(nickname: _nicknameController.text),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       var tween = Tween(begin: 0.0, end: 1.0).chain(
                         CurveTween(curve: Curves.ease),
@@ -206,8 +206,9 @@ class _Survey1State extends State<Survey1> with SingleTickerProviderStateMixin {
                 );
               }
                   : null,
+              elevation: 0,
               backgroundColor:
-              _isNicknameValid ? const Color(0xFFBFE240) : Colors.grey,
+              _isNicknameValid ? const Color(0xFFBFE240) : Color(0x80BFE240),
               shape: const CircleBorder(),
               child: const Icon(
                 Icons.arrow_forward,

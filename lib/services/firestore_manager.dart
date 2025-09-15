@@ -7,7 +7,8 @@ import 'firebase_db.dart'; //
 class UserProfile {
   final String uid;        // 파이어스토어에 저장되는 유저ID
   final String nickname;     // 유저 닉네임
-  final Map<String, dynamic> character;        // 캐릭터 정보
+  final int character;        // 캐릭터 정보
+  final Map<String, dynamic> survey;
   final String profileImageUrl; // 프로필사진 디렉토리
   final String statusMessage; // 상태메시지
   final DateTime updatedAt; //
@@ -17,6 +18,7 @@ class UserProfile {
     required this.uid,
     required this.nickname,
     required this.character,
+    required this.survey,
     required this.profileImageUrl,
     required this.statusMessage,
     required this.updatedAt,
@@ -28,7 +30,8 @@ class UserProfile {
     return UserProfile(
       uid: doc.id,
       nickname: data['nickname'] ?? '',
-      character: data['character'] ?? {},
+      character: (data['character'] as num?)?.toInt() ?? 0,
+      survey: data['survey'] as Map<String, dynamic>? ?? {},
       profileImageUrl: data['profileImageUrl'] ?? '',
       statusMessage: data['statusMessage'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -40,9 +43,9 @@ class UserProfile {
     final map = <String, dynamic>{
     'nickname': nickname,
     'character': character,
+    'survey': survey,
     'profileImageUrl': profileImageUrl,
     'statusMessage': statusMessage,
-    'createdAt': createdAt,
     'updatedAt': updatedAt,
   };
   if(includeCreatedAt){
@@ -62,11 +65,11 @@ class UserProfileService {
       throw StateError('로그인이 필요합니다. (currentUser == null)');
     }
     return user.uid;
-
   }
   Future<void> createORUpdateProfile({
     required String nickname,
-    Map<String, dynamic> character = const{},
+    int character = 0,
+    Map<String, dynamic> survey = const{},
     String profileImageUrl = '',
     String statusMessage = '',
     bool isCreate = false, // 최초 생성시 createdAt 세팅
@@ -77,6 +80,7 @@ class UserProfileService {
       'character' : character,
       'profileImageUrl' : profileImageUrl,
       'statusMessage' : statusMessage,
+      'survey' : survey,
       'updatedAt' : now,
     };
     if(isCreate){
