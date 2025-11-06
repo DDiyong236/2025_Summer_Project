@@ -16,6 +16,10 @@
         <meta-data
             android:name="com.naver.sdk.clientName"
             android:value="@string/client_name"/>
+        <meta-data
+            android:name="firebase_app_check_debug_token"
+            android:value="false">
+        </meta-data>
         <activity
             android:name=".MainActivity"
             android:exported="true"

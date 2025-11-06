@@ -4,9 +4,9 @@ import 'survey_6.dart';
 class Survey5 extends StatefulWidget {
   final String nickname;
   final int characterIndex;
-  final int environmentIndex;
-  final int purposeIndex;
-  const Survey5({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndex, required this.purposeIndex}) : super(key: key);
+  final List<int> environmentIndices;
+  final List<int> purposeIndices;
+  const Survey5({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndices, required this.purposeIndices}) : super(key: key);
 
   @override
   _Survey5State createState() => _Survey5State();
@@ -14,7 +14,7 @@ class Survey5 extends StatefulWidget {
 
 class _Survey5State extends State<Survey5> {
   final List<String> items = ['10분 이내', '10분 - 30분', '30분 - 1시간', '1시간 - 2시간','2시간 - 3시간','3시간 이상'];
-  int? selectedIndex;
+  List<int> _selectedIndices = [];
 
   void _saveSelectionAndNavigate(BuildContext context) {
     Navigator.push(
@@ -23,9 +23,9 @@ class _Survey5State extends State<Survey5> {
         pageBuilder: (context, animation, secondaryAnimation) => Survey6(
           nickname: widget.nickname,
           characterIndex: widget.characterIndex,
-          environmentIndex: widget.environmentIndex,
-          purposeIndex: widget.purposeIndex,
-          timeIndex: selectedIndex!,
+          environmentIndices: widget.environmentIndices,
+          purposeIndices: widget.purposeIndices,
+          timeIndices: _selectedIndices,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
@@ -103,11 +103,15 @@ class _Survey5State extends State<Survey5> {
                     runSpacing: 15.0, // 상자들 사이의 세로 간격
                     children: items.map((item) {
                       int index = items.indexOf(item);
-                      final isSelected = selectedIndex == index;
+                      final isSelected = _selectedIndices.contains(index);
                       return GestureDetector(
                         onTap: () {
                           setState(() {
-                            selectedIndex = index;
+                            if (isSelected) {
+                              _selectedIndices.remove(index);
+                            } else {
+                              _selectedIndices.add(index);
+                            }
                           });
                         },
                         child: Container(
@@ -146,7 +150,7 @@ class _Survey5State extends State<Survey5> {
             top: MediaQuery.of(context).size.height * 0.85,
             right: MediaQuery.of(context).size.width * 0.10,
             child: FloatingActionButton(
-              onPressed: selectedIndex != null ? () {
+              onPressed: _selectedIndices.isNotEmpty ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
               elevation: 0,
@@ -154,7 +158,7 @@ class _Survey5State extends State<Survey5> {
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Color(0x80BFE240),
+              backgroundColor: _selectedIndices.isNotEmpty ? const Color(0xFFBFE240) : Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),
