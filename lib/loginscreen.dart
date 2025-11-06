@@ -1,102 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_result.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
-import 'package:walky/services/firestore_manager.dart';
-import 'package:walky/services/google_auth_service.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:flutter_naver_login/interface/types/naver_token.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' as kakao;
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'main_page.dart';
-import 'services/firebase_db.dart';
-import 'services/firebase_storage_manager.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'services/google_auth_service.dart';
+
+// services/firebase_db.dart와 services/firestore_manager.dart, services/firebase_storage_manager.dart는
+// LoginScreen에서 직접 사용하지 않으므로, 원래 코드의 import 목록에서 사용하지 않는 것들은 제거했습니다.
 
 class LoginScreen extends StatelessWidget {
   final String nickname;
   final int characterIndex;
-  final int environmentIndex;
-  final int purposeIndex;
-  final int timeIndex;
-  final int featureIndex;
-  const LoginScreen({super.key, required this.nickname, required this.characterIndex, required this.environmentIndex, required this.purposeIndex, required this.timeIndex, required this.featureIndex});
-
-
-  Future<void> _saveSurveyData() async{
-    final UserProfileService _userProfileService = UserProfileService();
-    final surveyResults = {
-      'environmentIndex': environmentIndex,
-      'purposeIndex': purposeIndex,
-      'timeIndex': timeIndex,
-      'featureIndex': featureIndex,
-    };
-    try{
-      await _userProfileService.createORUpdateProfile(
-        nickname: nickname,
-        character: characterIndex,
-        survey: surveyResults,
-        isCreate: true,
-      );
-      print("설문 데이터가 성공적으로 저장되었습니다.");
-    }catch(e){
-      print("데이터 저장중 오류 발생: $e");
-    }
-  }
+  final List<int> environmentIndices;
+  final List<int> purposeIndices;
+  final List<int> timeIndices;
+  final List<int> featureIndices;
+  const LoginScreen({
+    super.key,
+    required this.nickname,
+    required this.characterIndex,
+    required this.environmentIndices,
+    required this.purposeIndices,
+    required this.timeIndices,
+    required this.featureIndices,
+  });
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     final AuthService _authService = AuthService();
     await _authService.signInWithGoogle()
         .then((_) async{
-      // 로그인 성공
-      await _saveSurveyData();
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MainPage()), // 예시
+        MaterialPageRoute(
+            builder: (context) => MainPage(
+              nickname: nickname,
+              characterIndex: characterIndex,
+              environmentIndices: environmentIndices,
+              purposeIndices: purposeIndices,
+              timeIndices: timeIndices,
+              featureIndices: featureIndices,
+            )
+        ),
       );
     })
-        .catchError((error) {
-      // 로그인 실패
-      print('로그인 실패: $error');
-    });
+        .catchError((error) {});
   }
+
   Future<void> _signInWithKakao(BuildContext context) async {
-    if (await isKakaoTalkInstalled()) {
+    if (await kakao.isKakaoTalkInstalled()) {
       try {
-        // 카카오톡 로그인 시도
-        await UserApi.instance.loginWithKakaoTalk().
-            then((_) async{
-              await _saveSurveyData();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const MainPage()),
-              );
-        }).catchError((error){
-          print("로그인 실패 $error");
-        });
-      } catch (error) {
-        print('카카오톡 로그인 실패: $error');
-        // 실패 시, 웹 로그인 시도
-        try {
-          await UserApi.instance.loginWithKakaoAccount()
-          .then((_) async{
-            await _saveSurveyData();
+        await kakao.UserApi.instance.loginWithKakaoTalk().
+        then((kakao.OAuthToken token) async{
+          final firebaseUser = await _signInWithKakaoToken(token.accessToken);
+          if(firebaseUser != null){
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const MainPage()),
+              MaterialPageRoute(
+                  builder: (context) => MainPage(
+                    nickname: nickname,
+                    characterIndex: characterIndex,
+                    environmentIndices: environmentIndices,
+                    purposeIndices: purposeIndices,
+                    timeIndices: timeIndices,
+                    featureIndices: featureIndices,
+                  )
+              ),
             );
-          }).catchError((Error){
-            print("로그인 실패 $Error");
-          });
-        } catch (e) {
-        }
+          }
+        }).catchError((error){});
+      } catch (error) {
+        try {
+          await kakao.UserApi.instance.loginWithKakaoAccount()
+              .then((kakao.OAuthToken token) async{
+            final firebaseUser = await _signInWithKakaoToken(token.accessToken);
+            if (firebaseUser != null) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                    builder: (context) => MainPage(
+                      nickname: nickname,
+                      characterIndex: characterIndex,
+                      environmentIndices: environmentIndices,
+                      purposeIndices: purposeIndices,
+                      timeIndices: timeIndices,
+                      featureIndices: featureIndices,
+                    )
+                ),
+              );
+            }
+          }).catchError((Error){});
+        } catch (e) {}
       }
     } else {
-      // 카카오톡 미설치 시 웹으로 로그인
       try {
-        await UserApi.instance.loginWithKakaoAccount();
-        User user = await UserApi.instance.me();
-        print('카카오 계정 로그인 성공: ${user.kakaoAccount?.profile?.nickname}');
-        await _saveSurveyData();
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainPage()),
-        );
-      } catch (e) {
-        print("카카오 계정 로그인 실패 $e");
-      }
+        kakao.OAuthToken token = await kakao.UserApi.instance.loginWithKakaoAccount();
+        final firebaseUser = await _signInWithKakaoToken(token.accessToken);
+        if (firebaseUser != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+                builder: (context) => MainPage(
+                  nickname: nickname,
+                  characterIndex: characterIndex,
+                  environmentIndices: environmentIndices,
+                  purposeIndices: purposeIndices,
+                  timeIndices: timeIndices,
+                  featureIndices: featureIndices,
+                )
+            ),
+          );
+        }
+      } catch (e) {}
+    }
+  }
+
+  Future<User?> _signInWithKakaoToken(String accessToken) async{
+    try{
+      final callable = FirebaseFunctions.instance.httpsCallable('kakaoLogin');
+      final result = await callable.call({'accessToken': accessToken});
+      final customToken = result.data['customToken'];
+      final credential = await FirebaseAuth.instance.signInWithCustomToken(customToken);
+      return credential.user;
+    }catch(e){
+      return null;
     }
   }
 
@@ -104,45 +130,66 @@ class LoginScreen extends StatelessWidget {
     try{
       final NaverLoginResult res = await FlutterNaverLogin.logIn();
       if(res.status == NaverLoginStatus.loggedIn){
-        await _saveSurveyData();
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainPage()),
-        );
-      }else{
-        print("로그인 실패: ${res.errorMessage}");
+        final NaverToken token = await FlutterNaverLogin.getCurrentAccessToken();
+
+        if (token.accessToken != null) {
+          final firebaseUser = await _signInWithNaverToken(token.accessToken);
+          if (firebaseUser != null) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => MainPage(
+                    nickname: nickname,
+                    characterIndex: characterIndex,
+                    environmentIndices: environmentIndices,
+                    purposeIndices: purposeIndices,
+                    timeIndices: timeIndices,
+                    featureIndices: featureIndices,
+                  )
+              ),
+            );
+          }
+        }
       }
     }catch(e){
-      print("로그인중 오류 발생: $e");
+    }
+  }
+
+  Future<User?> _signInWithNaverToken(String accessToken) async {
+    try {
+      final callable = FirebaseFunctions.instance.httpsCallable('naverLogin');
+      final result = await callable.call({'accessToken': accessToken});
+
+      final customToken = result.data['customToken'];
+      final credential = await FirebaseAuth.instance.signInWithCustomToken(customToken);
+
+      return credential.user;
+    } catch (e) {
+      return null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 왼쪽 캐릭터 이미지
           Align(
-            alignment: Alignment(-1.0,0.3),
+            alignment: const Alignment(-1.0,0.3),
             child: Image.asset(
               'assets/img/login_character_2.png',
               height: screenHeight * 0.55,
             ),
           ),
-          // 오른쪽 캐릭터 이미지
           Align(
-            alignment: Alignment(1.0,-0.25),
+            alignment: const Alignment(1.0,-0.25),
             child: Image.asset(
               'assets/img/login_character_1.png',
               height: screenHeight * 0.55,
             ),
           ),
-
-          // 텍스트와 버튼을 배치하는 Column
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
@@ -163,7 +210,7 @@ class LoginScreen extends StatelessWidget {
                   imagePath: 'assets/img/kakao_icons.png',
                   text: '카카오 계정으로 시작하기',
                   backgroundColor: const Color(0xFFFEE500),
-                  textColor: Color(0xDA000000),
+                  textColor: const Color(0xDA000000),
                   onPressed: () {
                     _signInWithKakao(context);
                   },

@@ -17,7 +17,7 @@ class _Survey3State extends State<Survey3> {
     '강변, 호수, 하천 주변',
     '카페 많은 거리'
   ];
-  int? selectedIndex;
+  List<int> _selectedIndices = [];
 
   void _saveSelectionAndNavigate(BuildContext context) {
     Navigator.push(
@@ -26,7 +26,7 @@ class _Survey3State extends State<Survey3> {
         pageBuilder: (context, animation, secondaryAnimation) => Survey4(
           nickname: widget.nickname,
           characterIndex: widget.characterIndex,
-          environmentIndex: selectedIndex!,
+          environmentIndices: _selectedIndices,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
@@ -102,14 +102,19 @@ class _Survey3State extends State<Survey3> {
                   child: ListView.builder(
                     itemCount: items.length,
                     itemBuilder: (context, index) {
-                      final isSelected = selectedIndex == index;
+                      final isSelected = _selectedIndices.contains(index);
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           GestureDetector(
                             onTap: () {
                               setState(() {
-                                selectedIndex = index;
+                                final isSelected = _selectedIndices.contains(index);
+                                if (isSelected) {
+                                  _selectedIndices.remove(index); // 이미 있으면 제거
+                                } else {
+                                  _selectedIndices.add(index); // 없으면 추가
+                                }
                               });
                             },
                             child: Container(
@@ -161,11 +166,11 @@ class _Survey3State extends State<Survey3> {
             top: MediaQuery.of(context).size.height * 0.85,
             right: MediaQuery.of(context).size.width * 0.10,
             child: FloatingActionButton(
-              onPressed: selectedIndex != null ? () {
+              onPressed: _selectedIndices.isNotEmpty ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
               elevation: 0,
-              backgroundColor: selectedIndex != null
+              backgroundColor: _selectedIndices.isNotEmpty
                   ? const Color(0xFFBFE240)
                   : Color(0x80BFE240),
               shape: const CircleBorder(),

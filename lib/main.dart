@@ -8,13 +8,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:walky/services/onboarding_flow.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kakao_flutter_sdk_auth/kakao_flutter_sdk_auth.dart';
-
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'services/tts_manager.dart';
 import 'services/google_auth_service.dart';
 import 'services/firestore_manager.dart';
 import 'services/firebase_db.dart'; // walkydb 전용 db
 import 'services/user_decider.dart'; // 판단 로직 가져오기
 import 'services/firebase_options.dart';
+import 'package:flutter/foundation.dart';
 
 import 'onboarding_1.dart';
 import 'main_page.dart';
@@ -32,6 +33,16 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.debug,
+  );
+  if (kDebugMode) {
+    FirebaseAppCheck.instance.onTokenChange.listen((token) {
+      print('앱체크: $token');
+    });
+  }else {
+    print('에러');
+  }
 
   // 카카오 관련 초기화
   KakaoSdk.init(nativeAppKey: "2f2c5202737e8642eed0968928895634");

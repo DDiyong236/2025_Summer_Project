@@ -4,10 +4,10 @@ import 'loginscreen.dart';
 class Survey6 extends StatefulWidget {
   final String nickname;
   final int characterIndex;
-  final int environmentIndex;
-  final int purposeIndex;
-  final int timeIndex;
-  const Survey6({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndex, required this.purposeIndex, required this.timeIndex}) : super(key: key);
+  final List<int> environmentIndices;
+  final List<int> purposeIndices;
+  final List<int> timeIndices;
+  const Survey6({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndices, required this.purposeIndices, required this.timeIndices}) : super(key: key);
 
   @override
   _Survey6State createState() => _Survey6State();
@@ -15,7 +15,7 @@ class Survey6 extends StatefulWidget {
 
 class _Survey6State extends State<Survey6> {
   final List<String> items = ['반려동물 산책 가능 장소', '포토 스팟', '벤치, 쉼터', '화장실 근처', '없음'];
-  int? selectedIndex;
+  List<int> _selectedIndices = [];
 
   void _saveSelectionAndNavigate(BuildContext context) {
     Navigator.push(
@@ -24,10 +24,10 @@ class _Survey6State extends State<Survey6> {
         pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(
           nickname: widget.nickname,
           characterIndex: widget.characterIndex,
-          environmentIndex: widget.environmentIndex,
-          purposeIndex: widget.purposeIndex,
-          timeIndex: widget.timeIndex,
-          featureIndex: selectedIndex!,
+          environmentIndices: widget.environmentIndices,
+          purposeIndices: widget.purposeIndices,
+          timeIndices: widget.timeIndices,
+          featureIndices: _selectedIndices,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var tween = Tween(begin: 0.0, end: 1.0)
@@ -131,7 +131,7 @@ class _Survey6State extends State<Survey6> {
             top: MediaQuery.of(context).size.height * 0.85,
             right: MediaQuery.of(context).size.width * 0.10,
             child: FloatingActionButton(
-              onPressed: selectedIndex != null ? () {
+              onPressed: _selectedIndices.isNotEmpty ? () {
                 _saveSelectionAndNavigate(context);
               } : null,
               elevation: 0,
@@ -139,7 +139,7 @@ class _Survey6State extends State<Survey6> {
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: selectedIndex != null ? const Color(0xFFBFE240) : Color(0x80BFE240),
+              backgroundColor: _selectedIndices.isNotEmpty ? const Color(0xFFBFE240) : Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),
@@ -149,11 +149,27 @@ class _Survey6State extends State<Survey6> {
   }
 
   Widget _buildChoiceButton(BuildContext context, String item, int index) {
-    final isSelected = selectedIndex == index;
+    final isSelected = _selectedIndices.contains(index);
     return GestureDetector(
       onTap: () {
         setState(() {
-          selectedIndex = index;
+          final noneButtonIndex = 4;
+          if (index == noneButtonIndex) {
+            // '없음' 버튼을 탭한 경우
+            _selectedIndices.clear(); // 모든 선택 해제
+            if (!isSelected) {
+              _selectedIndices.add(index); // '없음'만 선택
+            }
+          } else {
+            // '없음' 외 다른 버튼을 탭한 경우
+            _selectedIndices.remove(noneButtonIndex); // '없음' 선택 해제
+
+            if (isSelected) {
+              _selectedIndices.remove(index); // 이미 선택된 항목이면 해제
+            } else {
+              _selectedIndices.add(index); // 선택되지 않은 항목이면 추가
+            }
+          }
         });
       },
       child: Container(
