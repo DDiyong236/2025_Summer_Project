@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'survey_6.dart';
 
 class Survey5 extends StatefulWidget {
@@ -6,14 +7,27 @@ class Survey5 extends StatefulWidget {
   final int characterIndex;
   final List<int> environmentIndices;
   final List<int> purposeIndices;
-  const Survey5({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndices, required this.purposeIndices}) : super(key: key);
+  const Survey5(
+      {Key? key,
+        required this.nickname,
+        required this.characterIndex,
+        required this.environmentIndices,
+        required this.purposeIndices})
+      : super(key: key);
 
   @override
   _Survey5State createState() => _Survey5State();
 }
 
 class _Survey5State extends State<Survey5> {
-  final List<String> items = ['10분 이내', '10분 - 30분', '30분 - 1시간', '1시간 - 2시간','2시간 - 3시간','3시간 이상'];
+  final List<String> items = [
+    '10분 이내',
+    '10분 - 30분',
+    '30분 - 1시간',
+    '1시간 - 2시간',
+    '2시간 - 3시간',
+    '3시간 이상'
+  ];
   List<int> _selectedIndices = [];
 
   void _saveSelectionAndNavigate(BuildContext context) {
@@ -45,13 +59,12 @@ class _Survey5State extends State<Survey5> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. 진행 바
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.08,
-              left: MediaQuery.of(context).size.height * 0.03,
-              right: MediaQuery.of(context).size.height * 0.03,
+              top: 0.08.sh,
+              left: 0.03.sh,
+              right: 0.03.sh,
               child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                borderRadius: BorderRadius.all(Radius.circular(15.r)),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween<double>(begin: 0.667, end: 0.833),
                   duration: const Duration(milliseconds: 500),
@@ -59,7 +72,7 @@ class _Survey5State extends State<Survey5> {
                   builder: (context, value, child) {
                     return LinearProgressIndicator(
                       value: value,
-                      minHeight: 7.0,
+                      minHeight: 7.0.h,
                       backgroundColor: const Color(0xFFF5F5F5),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFFBFE240),
@@ -68,39 +81,37 @@ class _Survey5State extends State<Survey5> {
                   },
                 ),
               )),
-
-          // 2. 텍스트와 Wrap 위젯
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.13,
-            left: MediaQuery.of(context).size.height * 0.025,
-            right: MediaQuery.of(context).size.height * 0.025,
+            top: 0.13.sh,
+            left: 0.025.sh,
+            right: 0.025.sh,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 30),
-                const Text(
+                SizedBox(height: 30.h),
+                Text(
                   'STEP 3',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF707070),
+                    color: const Color(0xFF707070),
                   ),
                 ),
-                const SizedBox(height: 10),
-                const Text(
+                SizedBox(height: 10.h),
+                Text(
                   '적당한 산책 시간을 알려주세요',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF000000),
+                    color: const Color(0xFF000000),
                   ),
                 ),
-                const SizedBox(height: 50),
+                SizedBox(height: 72.h),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.5,
+                  height: 0.5.sh,
                   child: Wrap(
-                    spacing: 10.0, // 상자들 사이의 가로 간격
-                    runSpacing: 15.0, // 상자들 사이의 세로 간격
+                    spacing: 10.0.w,
+                    runSpacing: 15.0.h,
                     children: items.map((item) {
                       int index = items.indexOf(item);
                       final isSelected = _selectedIndices.contains(index);
@@ -115,22 +126,27 @@ class _Survey5State extends State<Survey5> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10.0),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 32.0.w, vertical: 10.0.h),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(40.0),
-                            color: isSelected ? const Color(0x33BFE240) : const Color(0xFFFFFFFF),
+                            borderRadius: BorderRadius.circular(40.0.r),
+                            color: isSelected
+                                ? const Color(0x33BFE240)
+                                : const Color(0xFFFFFFFF),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFFBFE240) : Color(0xFFDDD7D7),
+                              color: isSelected
+                                  ? const Color(0xFFBFE240)
+                                  : const Color(0xFFDDD7D7),
                               width: 1.4,
                             ),
                           ),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min, // 상자 크기를 자식 위젯에 맞춤
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 item,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                   color: Colors.black,
                                 ),
                               ),
@@ -144,21 +160,23 @@ class _Survey5State extends State<Survey5> {
               ],
             ),
           ),
-
-          // 3. 다음 단계 버튼
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.85,
-            right: MediaQuery.of(context).size.width * 0.10,
+            top: 0.85.sh,
+            right: 0.10.sw,
             child: FloatingActionButton(
-              onPressed: _selectedIndices.isNotEmpty ? () {
+              onPressed: _selectedIndices.isNotEmpty
+                  ? () {
                 _saveSelectionAndNavigate(context);
-              } : null,
+              }
+                  : null,
               elevation: 0,
               child: const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: _selectedIndices.isNotEmpty ? const Color(0xFFBFE240) : Color(0x80BFE240),
+              backgroundColor: _selectedIndices.isNotEmpty
+                  ? const Color(0xFFBFE240)
+                  : const Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),

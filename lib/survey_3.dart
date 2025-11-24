@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'survey_4.dart';
 
 class Survey3 extends StatefulWidget {
   final String nickname;
   final int characterIndex;
-  const Survey3({Key? key, required this.nickname, required this.characterIndex}) : super(key: key);
+  const Survey3(
+      {Key? key, required this.nickname, required this.characterIndex})
+      : super(key: key);
 
   @override
   _Survey3State createState() => _Survey3State();
@@ -46,13 +49,12 @@ class _Survey3State extends State<Survey3> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. 진행 바
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.08,
-              left: MediaQuery.of(context).size.height * 0.03,
-              right: MediaQuery.of(context).size.height * 0.03,
+              top: 0.08.sh,
+              left: 0.03.sh,
+              right: 0.03.sh,
               child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                borderRadius: BorderRadius.all(Radius.circular(15.r)),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween<double>(begin: 0.334, end: 0.5),
                   duration: const Duration(milliseconds: 500),
@@ -60,7 +62,7 @@ class _Survey3State extends State<Survey3> {
                   builder: (context, value, child) {
                     return LinearProgressIndicator(
                       value: value,
-                      minHeight: 7.0,
+                      minHeight: 7.0.h,
                       backgroundColor: const Color(0xFFF5F5F5),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFFBFE240),
@@ -69,36 +71,34 @@ class _Survey3State extends State<Survey3> {
                   },
                 ),
               )),
-
-          // 2. 텍스트와 리스트뷰
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.13,
-            left: MediaQuery.of(context).size.height * 0.025,
-            right: MediaQuery.of(context).size.height * 0.025,
+            top: 0.13.sh,
+            left: 0.025.sh,
+            right: 0.025.sh,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 30),
-                const Text(
+                SizedBox(height: 30.h),
+                Text(
                   'STEP 3',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF707070),
+                    color: const Color(0xFF707070),
                   ),
                 ),
-                const SizedBox(height: 10),
-                const Text(
+                SizedBox(height: 10.h),
+                Text(
                   '어떤 산책 환경에 관심이 있으신가요?',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF000000),
+                    color: const Color(0xFF000000),
                   ),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.5,
+                  height: 0.5.sh,
                   child: ListView.builder(
                     itemCount: items.length,
                     itemBuilder: (context, index) {
@@ -109,25 +109,28 @@ class _Survey3State extends State<Survey3> {
                           GestureDetector(
                             onTap: () {
                               setState(() {
-                                final isSelected = _selectedIndices.contains(index);
+                                final isSelected =
+                                _selectedIndices.contains(index);
                                 if (isSelected) {
-                                  _selectedIndices.remove(index); // 이미 있으면 제거
+                                  _selectedIndices.remove(index);
                                 } else {
-                                  _selectedIndices.add(index); // 없으면 추가
+                                  _selectedIndices.add(index);
                                 }
                               });
                             },
                             child: Container(
-                              height: 40,
-                              margin: const EdgeInsets.symmetric(vertical: 7),
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              height: 40.h,
+                              margin: EdgeInsets.symmetric(vertical: 7.h),
+                              padding: EdgeInsets.symmetric(horizontal: 20.0.w),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(40.0),
+                                borderRadius: BorderRadius.circular(40.0.r),
                                 color: isSelected
                                     ? const Color(0x33BFE240)
                                     : const Color(0xFFFFFFFF),
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFFBFE240) : Color(0xFFDDD7D7),
+                                  color: isSelected
+                                      ? const Color(0xFFBFE240)
+                                      : const Color(0xFFDDD7D7),
                                   width: 1.4,
                                 ),
                               ),
@@ -137,16 +140,16 @@ class _Survey3State extends State<Survey3> {
                                 children: [
                                   Text(
                                     items[index],
-                                    style: const TextStyle(
-                                      fontSize: 14,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
                                       color: Colors.black,
                                     ),
                                   ),
-                                  const SizedBox(width: 15),
+                                  SizedBox(width: 15.w),
                                   Image.asset(
                                     'assets/img/walk_icon_${index + 1}.png',
-                                    width: 20,
-                                    height: 20,
+                                    width: 20.w,
+                                    height: 20.w,
                                   ),
                                 ],
                               ),
@@ -160,19 +163,19 @@ class _Survey3State extends State<Survey3> {
               ],
             ),
           ),
-
-          // 3. 다음 단계 버튼
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.85,
-            right: MediaQuery.of(context).size.width * 0.10,
+            top: 0.85.sh,
+            right: 0.10.sw,
             child: FloatingActionButton(
-              onPressed: _selectedIndices.isNotEmpty ? () {
+              onPressed: _selectedIndices.isNotEmpty
+                  ? () {
                 _saveSelectionAndNavigate(context);
-              } : null,
+              }
+                  : null,
               elevation: 0,
               backgroundColor: _selectedIndices.isNotEmpty
                   ? const Color(0xFFBFE240)
-                  : Color(0x80BFE240),
+                  : const Color(0x80BFE240),
               shape: const CircleBorder(),
               child: const Icon(
                 Icons.arrow_forward,
