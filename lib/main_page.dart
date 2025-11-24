@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'services/firestore_manager.dart'; // UserProfileService import
+import 'library_screen.dart';
 
 class MainPage extends StatefulWidget {
   // LoginScreen에서 넘겨받은 초기 데이터
@@ -109,6 +110,21 @@ class _MainPageState extends State<MainPage> {
                 Text("캐릭터 번호: ${profile.character}"),
                 Text("설문 인덱스 (목적): ${profile.survey['purposeIndex']}"),
                 // 필요한 다른 프로필 정보나 위젯을 여기에 추가
+
+                // ❗️ 2. 버튼 추가
+                const SizedBox(height: 30), // 버튼 위 여백
+                ElevatedButton(
+                  onPressed: () {
+                    // ❗️ 3. LibraryScreen으로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LibraryScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('라이브러리 스크린으로 이동'),
+                ),
               ],
             ),
           );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'loginscreen.dart';
 
 class Survey6 extends StatefulWidget {
@@ -7,14 +8,27 @@ class Survey6 extends StatefulWidget {
   final List<int> environmentIndices;
   final List<int> purposeIndices;
   final List<int> timeIndices;
-  const Survey6({Key? key, required this.nickname, required this.characterIndex, required this.environmentIndices, required this.purposeIndices, required this.timeIndices}) : super(key: key);
+  const Survey6(
+      {Key? key,
+        required this.nickname,
+        required this.characterIndex,
+        required this.environmentIndices,
+        required this.purposeIndices,
+        required this.timeIndices})
+      : super(key: key);
 
   @override
   _Survey6State createState() => _Survey6State();
 }
 
 class _Survey6State extends State<Survey6> {
-  final List<String> items = ['반려동물 산책 가능 장소', '포토 스팟', '벤치, 쉼터', '화장실 근처', '없음'];
+  final List<String> items = [
+    '반려동물 산책 가능 장소',
+    '포토 스팟',
+    '벤치, 쉼터',
+    '화장실 근처',
+    '없음'
+  ];
   List<int> _selectedIndices = [];
 
   void _saveSelectionAndNavigate(BuildContext context) {
@@ -47,13 +61,12 @@ class _Survey6State extends State<Survey6> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. 진행 바
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.08,
-              left: MediaQuery.of(context).size.height * 0.03,
-              right: MediaQuery.of(context).size.height * 0.03,
+              top: 0.08.sh,
+              left: 0.03.sh,
+              right: 0.03.sh,
               child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                borderRadius: BorderRadius.all(Radius.circular(15.r)),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween<double>(begin: 0.833, end: 1.0),
                   duration: const Duration(milliseconds: 500),
@@ -61,7 +74,7 @@ class _Survey6State extends State<Survey6> {
                   builder: (context, value, child) {
                     return LinearProgressIndicator(
                       value: value,
-                      minHeight: 7.0,
+                      minHeight: 7.0.h,
                       backgroundColor: const Color(0xFFF5F5F5),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFFBFE240),
@@ -70,52 +83,47 @@ class _Survey6State extends State<Survey6> {
                   },
                 ),
               )),
-
-          // 2. 텍스트와 버튼
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.13,
-            left: MediaQuery.of(context).size.height * 0.025,
-            right: MediaQuery.of(context).size.height * 0.025,
+            top: 0.13.sh,
+            left: 0.025.sh,
+            right: 0.025.sh,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 30),
-                const Text(
+                SizedBox(height: 30.h),
+                Text(
                   'STEP 3',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF707070),
+                    color: const Color(0xFF707070),
                   ),
                 ),
-                const SizedBox(height: 10),
-                const Text(
+                SizedBox(height: 10.h),
+                Text(
                   '산책 시 선호하는 요소를 골라주세요',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF000000),
+                    color: const Color(0xFF000000),
                   ),
                 ),
-                const SizedBox(height: 50),
-                Column( // 전체 버튼 그룹을 Column으로 묶습니다.
-                  crossAxisAlignment: CrossAxisAlignment.start, // 왼쪽 정렬
+                SizedBox(height: 48.h),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 첫 번째 텍스트 버튼만 포함하는 Wrap
                     Wrap(
-                      spacing: 10.0,
-                      runSpacing: 10.0,
+                      spacing: 10.0.w,
+                      runSpacing: 10.0.h,
                       children: [
-                        _buildChoiceButton(context, items[0], 0), // 첫 번째 아이템
+                        _buildChoiceButton(context, items[0], 0),
                       ],
                     ),
-                    const SizedBox(height: 10), // 첫 번째 줄과 다음 줄 사이 간격
-
-                    // 나머지 텍스트 버튼들을 포함하는 Wrap
+                    SizedBox(height: 10.h),
                     Wrap(
-                      spacing: 10.0,
-                      runSpacing: 10.0,
-                      children: items.sublist(1).map((item) { // 첫 번째 아이템 제외한 나머지
+                      spacing: 10.0.w,
+                      runSpacing: 10.0.h,
+                      children: items.sublist(1).map((item) {
                         int index = items.indexOf(item);
                         return _buildChoiceButton(context, item, index);
                       }).toList(),
@@ -125,21 +133,23 @@ class _Survey6State extends State<Survey6> {
               ],
             ),
           ),
-
-          // 3. 다음 단계 버튼
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.85,
-            right: MediaQuery.of(context).size.width * 0.10,
+            top: 0.85.sh,
+            right: 0.10.sw,
             child: FloatingActionButton(
-              onPressed: _selectedIndices.isNotEmpty ? () {
+              onPressed: _selectedIndices.isNotEmpty
+                  ? () {
                 _saveSelectionAndNavigate(context);
-              } : null,
+              }
+                  : null,
               elevation: 0,
               child: const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),
-              backgroundColor: _selectedIndices.isNotEmpty ? const Color(0xFFBFE240) : Color(0x80BFE240),
+              backgroundColor: _selectedIndices.isNotEmpty
+                  ? const Color(0xFFBFE240)
+                  : const Color(0x80BFE240),
               shape: const CircleBorder(),
             ),
           ),
@@ -155,41 +165,41 @@ class _Survey6State extends State<Survey6> {
         setState(() {
           final noneButtonIndex = 4;
           if (index == noneButtonIndex) {
-            // '없음' 버튼을 탭한 경우
-            _selectedIndices.clear(); // 모든 선택 해제
+            _selectedIndices.clear();
             if (!isSelected) {
-              _selectedIndices.add(index); // '없음'만 선택
+              _selectedIndices.add(index);
             }
           } else {
-            // '없음' 외 다른 버튼을 탭한 경우
-            _selectedIndices.remove(noneButtonIndex); // '없음' 선택 해제
+            _selectedIndices.remove(noneButtonIndex);
 
             if (isSelected) {
-              _selectedIndices.remove(index); // 이미 선택된 항목이면 해제
+              _selectedIndices.remove(index);
             } else {
-              _selectedIndices.add(index); // 선택되지 않은 항목이면 추가
+              _selectedIndices.add(index);
             }
           }
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10.0),
+        padding: EdgeInsets.symmetric(horizontal: 32.0.w, vertical: 10.0.h),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(40.0),
-          color: isSelected ? const Color(0x28BFE240) : const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(40.0.r),
+          color:
+          isSelected ? const Color(0x28BFE240) : const Color(0xFFFFFFFF),
           border: Border.all(
-            color: isSelected ? Color(0xFFBFE240) : Color(0xFFDDD7D7),
+            color: isSelected
+                ? const Color(0xFFBFE240)
+                : const Color(0xFFDDD7D7),
             width: 1.4,
           ),
         ),
-
         child: Row(
-          mainAxisSize: MainAxisSize.min, // 텍스트 길이에 맞춰 너비 조절
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               item,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: Colors.black,
               ),
             ),

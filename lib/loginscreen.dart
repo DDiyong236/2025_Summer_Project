@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; // ⭐️ ScreenUtil 임포트 필수
 import 'package:flutter_naver_login/interface/types/naver_login_result.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 import 'package:flutter_naver_login/interface/types/naver_token.dart';
@@ -8,9 +9,6 @@ import 'main_page.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'services/google_auth_service.dart';
-
-// services/firebase_db.dart와 services/firestore_manager.dart, services/firebase_storage_manager.dart는
-// LoginScreen에서 직접 사용하지 않으므로, 원래 코드의 import 목록에서 사용하지 않는 것들은 제거했습니다.
 
 class LoginScreen extends StatelessWidget {
   final String nickname;
@@ -29,10 +27,13 @@ class LoginScreen extends StatelessWidget {
     required this.featureIndices,
   });
 
+  // ----------------------------------------------------------------------
+  // 로그인 로직 (기존 유지)
+  // ----------------------------------------------------------------------
+
   Future<void> _signInWithGoogle(BuildContext context) async {
     final AuthService _authService = AuthService();
-    await _authService.signInWithGoogle()
-        .then((_) async{
+    await _authService.signInWithGoogle().then((_) async {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
             builder: (context) => MainPage(
@@ -42,20 +43,19 @@ class LoginScreen extends StatelessWidget {
               purposeIndices: purposeIndices,
               timeIndices: timeIndices,
               featureIndices: featureIndices,
-            )
-        ),
+            )),
       );
-    })
-        .catchError((error) {});
+    }).catchError((error) {});
   }
 
   Future<void> _signInWithKakao(BuildContext context) async {
     if (await kakao.isKakaoTalkInstalled()) {
       try {
-        await kakao.UserApi.instance.loginWithKakaoTalk().
-        then((kakao.OAuthToken token) async{
+        await kakao.UserApi.instance
+            .loginWithKakaoTalk()
+            .then((kakao.OAuthToken token) async {
           final firebaseUser = await _signInWithKakaoToken(token.accessToken);
-          if(firebaseUser != null){
+          if (firebaseUser != null) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                   builder: (context) => MainPage(
@@ -65,15 +65,15 @@ class LoginScreen extends StatelessWidget {
                     purposeIndices: purposeIndices,
                     timeIndices: timeIndices,
                     featureIndices: featureIndices,
-                  )
-              ),
+                  )),
             );
           }
-        }).catchError((error){});
+        }).catchError((error) {});
       } catch (error) {
         try {
-          await kakao.UserApi.instance.loginWithKakaoAccount()
-              .then((kakao.OAuthToken token) async{
+          await kakao.UserApi.instance
+              .loginWithKakaoAccount()
+              .then((kakao.OAuthToken token) async {
             final firebaseUser = await _signInWithKakaoToken(token.accessToken);
             if (firebaseUser != null) {
               Navigator.of(context).pushReplacement(
@@ -85,16 +85,16 @@ class LoginScreen extends StatelessWidget {
                       purposeIndices: purposeIndices,
                       timeIndices: timeIndices,
                       featureIndices: featureIndices,
-                    )
-                ),
+                    )),
               );
             }
-          }).catchError((Error){});
+          }).catchError((Error) {});
         } catch (e) {}
       }
     } else {
       try {
-        kakao.OAuthToken token = await kakao.UserApi.instance.loginWithKakaoAccount();
+        kakao.OAuthToken token =
+        await kakao.UserApi.instance.loginWithKakaoAccount();
         final firebaseUser = await _signInWithKakaoToken(token.accessToken);
         if (firebaseUser != null) {
           Navigator.of(context).pushReplacement(
@@ -106,30 +106,30 @@ class LoginScreen extends StatelessWidget {
                   purposeIndices: purposeIndices,
                   timeIndices: timeIndices,
                   featureIndices: featureIndices,
-                )
-            ),
+                )),
           );
         }
       } catch (e) {}
     }
   }
 
-  Future<User?> _signInWithKakaoToken(String accessToken) async{
-    try{
+  Future<User?> _signInWithKakaoToken(String accessToken) async {
+    try {
       final callable = FirebaseFunctions.instance.httpsCallable('kakaoLogin');
       final result = await callable.call({'accessToken': accessToken});
       final customToken = result.data['customToken'];
-      final credential = await FirebaseAuth.instance.signInWithCustomToken(customToken);
+      final credential =
+      await FirebaseAuth.instance.signInWithCustomToken(customToken);
       return credential.user;
-    }catch(e){
+    } catch (e) {
       return null;
     }
   }
 
-  Future<void> _signInWithNaver(BuildContext context) async{
-    try{
+  Future<void> _signInWithNaver(BuildContext context) async {
+    try {
       final NaverLoginResult res = await FlutterNaverLogin.logIn();
-      if(res.status == NaverLoginStatus.loggedIn){
+      if (res.status == NaverLoginStatus.loggedIn) {
         final NaverToken token = await FlutterNaverLogin.getCurrentAccessToken();
 
         if (token.accessToken != null) {
@@ -144,14 +144,12 @@ class LoginScreen extends StatelessWidget {
                     purposeIndices: purposeIndices,
                     timeIndices: timeIndices,
                     featureIndices: featureIndices,
-                  )
-              ),
+                  )),
             );
           }
         }
       }
-    }catch(e){
-    }
+    } catch (e) {}
   }
 
   Future<User?> _signInWithNaverToken(String accessToken) async {
@@ -160,7 +158,8 @@ class LoginScreen extends StatelessWidget {
       final result = await callable.call({'accessToken': accessToken});
 
       final customToken = result.data['customToken'];
-      final credential = await FirebaseAuth.instance.signInWithCustomToken(customToken);
+      final credential =
+      await FirebaseAuth.instance.signInWithCustomToken(customToken);
 
       return credential.user;
     } catch (e) {
@@ -168,34 +167,44 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
+  // ----------------------------------------------------------------------
+  // 화면 UI 구성
+  // ----------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Align(
-            alignment: const Alignment(-1.0,0.3),
+          // ⭐️ [수정 1] 태블릿 호환을 위해 Positioned로 위치 고정 (왼쪽 캐릭터)
+          Positioned(
+            left: -30.w, // 왼쪽으로 살짝 숨기거나 조절 가능 (필요시 0으로 변경)
+            bottom: 0.15.sh, // 바닥에서 15% 위로
             child: Image.asset(
               'assets/img/login_character_2.png',
-              height: screenHeight * 0.55,
+              height: 0.55.sh, // 화면 높이의 55%
+              fit: BoxFit.contain,
             ),
           ),
-          Align(
-            alignment: const Alignment(1.0,-0.25),
+
+          // ⭐️ [수정 2] 태블릿 호환을 위해 Positioned로 위치 고정 (오른쪽 캐릭터)
+          Positioned(
+            right: -20.w, // 오른쪽으로 살짝 붙임
+            top: 0.12.sh, // 천장에서 12% 아래로
             child: Image.asset(
               'assets/img/login_character_1.png',
-              height: screenHeight * 0.55,
+              height: 0.55.sh,
+              fit: BoxFit.contain,
             ),
           ),
+
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: EdgeInsets.symmetric(horizontal: 24.0.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: screenHeight * 0.1),
+                SizedBox(height: 0.1.sh),
                 const Text(
                   '산책 시작을 위해\n로그인이 필요해요!',
                   textAlign: TextAlign.left,
@@ -205,6 +214,8 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
+
+                // 버튼들
                 _buildSocialLoginButton(
                   context,
                   imagePath: 'assets/img/kakao_icons.png',
@@ -215,7 +226,7 @@ class LoginScreen extends StatelessWidget {
                     _signInWithKakao(context);
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 12.h), // 간격 살짝 줄임 (16 -> 12)
                 _buildSocialLoginButton(
                   context,
                   imagePath: 'assets/img/naver_logo.png',
@@ -226,7 +237,7 @@ class LoginScreen extends StatelessWidget {
                     _signInWithNaver(context);
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 12.h),
                 _buildSocialLoginButton(
                   context,
                   imagePath: 'assets/img/google_logo.png',
@@ -238,7 +249,7 @@ class LoginScreen extends StatelessWidget {
                     _signInWithGoogle(context);
                   },
                 ),
-                const SizedBox(height: 50),
+                SizedBox(height: 50.h),
               ],
             ),
           ),
@@ -262,10 +273,13 @@ class LoginScreen extends StatelessWidget {
         backgroundColor: backgroundColor,
         foregroundColor: textColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50.0),
-          side: borderColor != null ? BorderSide(color: borderColor) : BorderSide.none,
+          borderRadius: BorderRadius.circular(50.0.r),
+          side: borderColor != null
+              ? BorderSide(color: borderColor)
+              : BorderSide.none,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 13.0),
+        // ⭐️ [수정 3] 버튼 두께를 얇게 조절 (13 -> 10)
+        padding: EdgeInsets.symmetric(vertical: 10.0.h),
         elevation: 0,
       ),
       child: Row(
@@ -273,13 +287,15 @@ class LoginScreen extends StatelessWidget {
         children: [
           Image.asset(
             imagePath,
-            height: 24,
+            // ⭐️ [수정 4] 아이콘 크기 축소 (24 -> 20)
+            height: 20.h,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Text(
             text,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              // ⭐️ [수정 5] 텍스트 크기 축소 (16 -> 14)
+              fontSize: 14.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
