@@ -4,8 +4,9 @@ import 'dart:convert';
 
 /// ----------- 환경: 에뮬레이터/실기기에 맞춰 바꾸세요 -----------
 const String kApiBase =
-//String.fromEnvironment('API_BASE', defaultValue: 'http://127.0.0.1:5123');
-String.fromEnvironment('API_BASE', defaultValue: 'http://192.168.0.16:5123'); // 학교 주소
+//String.fromEnvironment('API_BASE', defaultValue: 'http://172.31.64.116:5123');
+//String.fromEnvironment('API_BASE', defaultValue: 'http://192.168.0.16:5123'); // 학교 주소
+String.fromEnvironment('API_BASE', defaultValue: 'http://127.0.0.1:5123'); // 학교 주소
 
 // Android 에뮬레이터: 10.0.2.2, iOS 시뮬레이터: http://127.0.0.1:5123,
 // 실기기: http://<PC-LAN-IP>:5123
